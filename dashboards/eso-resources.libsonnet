@@ -49,14 +49,9 @@ local readyOverride =
       local namespaceLabel = defaultFilters.namespaceLabel;
       local namespaceNameLegend = '{{ %(namespaceLabel)s }}/{{ name }}' % defaultFilters;
 
-      // Every "Overview [1h]" table below caps its rows with a topk(40, ...) set (picked by
-      // readiness for most resource kinds, or by sync rate for ExternalSecret), then joins
-      // the rest of that table's columns onto the same set with "and on (...)" so every
-      // column lists the same 40 resources. ESO's own gauges (status_condition,
-      // reconcile_duration) carry one series per replica pod - each with its own
-      // container/instance/pod labels - so every aggregation below re-groups down to just the
-      // resource-identifying labels (byClause) first; skipping that would let the "and on"
-      // join pass pod labels through untouched and split one resource into a row per pod.
+      // ESO's gauges carry one series per replica pod, so every aggregation below re-groups
+      // down to byClause first - otherwise "and on (...)" joins would split one resource into
+      // a row per pod.
       local topAggFns = {
         readyTop40k(metricName, filterExpr, byClause):: |||
           topk(40,
@@ -123,9 +118,6 @@ local readyOverride =
         ||| % { innerQuery: innerQuery },
       };
 
-      // "<namespaceLabel>, name" and "name" are already-resolved strings (no more %(...)s
-      // placeholders left in them), so passing them into topAggFns' own %-formatting below is
-      // a single, safe substitution pass - not a second round of templating.
       local namespacedBy = '%s, name' % namespaceLabel;
       local clusterBy = 'name';
 
@@ -698,11 +690,7 @@ local readyOverride =
           ),
       };
 
-      // Rows for the less-frequently-needed CRD kinds (everything past ExternalSecret) start
-      // collapsed so the dashboard opens on the Provider and External Secret content only;
-      // their panels are nested under the row via withPanels rather than laid out as
-      // top-level, so collapsing them doesn't leave a vertical gap. panelGroups is a list of
-      // {panels, width, height} stacked top to bottom starting at y + 1.
+      // panelGroups is a list of {panels, width, height}, stacked top to bottom from y + 1.
       local collapsedRow(title, y, panelGroups) =
         local step(acc, group) = {
           out: acc.out + grid.wrapPanels(group.panels, group.width, group.height, startY=acc.y),
@@ -717,9 +705,6 @@ local readyOverride =
         row.withCollapsed(true) +
         row.withPanels(nestedPanels);
 
-      // No fleet-wide summary stats here - those live on the Overview dashboard. Every row
-      // below is breakdown content for one CRD: per-resource pies/time series (top 20/40 by
-      // name to keep the graph readable) and a per-resource overview table.
       local rows =
         [
           row.new('Provider') +

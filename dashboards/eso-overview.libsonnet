@@ -18,8 +18,7 @@ local tbPanelOptions = tablePanel.panelOptions;
 local tsStandardOptions = timeSeriesPanel.standardOptions;
 local tsOverride = tsStandardOptions.override;
 
-// Ready=True renders green, Ready=False renders red, matching the Ready column colors on
-// the Resources dashboard's per-resource tables.
+// True/False status series render green/red.
 local readyStatusOverrides = [
   tsOverride.byName.new('True') +
   tsOverride.byName.withPropertiesFromOptions(
@@ -40,8 +39,6 @@ local readyStatusOverrides = [
 
       local defaultVariables = util.variables($._config);
 
-      // Overview is a fleet-wide health summary: only namespace and provider are filterable,
-      // there's no per-resource-name drill-down here (that's what the Resources dashboard is for).
       local variables = [
         defaultVariables.datasource,
         defaultVariables.cluster,
@@ -53,9 +50,6 @@ local readyStatusOverrides = [
       local defaultFilters = util.filters($._config);
       local namespaceLabel = defaultFilters.namespaceLabel;
 
-      // Shared shapes behind the per-CRD stats and tables below: a distinct-entity count, the
-      // Ready-condition percentage, and the "which ones are currently failing" list. Each CRD
-      // kind only differs in its metric name, filter fragment and grouping labels.
       local namespacedBy = '%s, name' % namespaceLabel;
       local clusterBy = 'name';
 
@@ -108,8 +102,6 @@ local readyStatusOverrides = [
         clusterPushSecretsCount: countBy('clusterpushsecret_status_condition', defaultFilters.default, clusterBy),
         providersCount: countBy('externalsecret_provider_api_calls_count', defaultFilters.providerRuntime, 'provider'),
 
-        // Distinct namespaces holding at least one of ESO's namespaced CRDs - "or" between
-        // the raw metrics unions whichever kinds currently have data.
         namespacesCount: |||
           count(
             count(
@@ -122,11 +114,7 @@ local readyStatusOverrides = [
           )
         ||| % defaultFilters,
 
-        // Fleet-wide totals across all three CRD families. "or" between the raw metrics
-        // (rather than adding pre-aggregated per-kind counts) unions whichever of the five
-        // sources currently has data, so these stay correct even when a whole CRD family
-        // (e.g. PushSecret) has zero instances - a plain "+" would inner-join on labels and
-        // silently produce no data at all instead of falling back to what does exist.
+        // "or" rather than "+" so a CRD family with zero instances doesn't zero out the total.
         totalResourcesCount: |||
           count(
             count(
@@ -250,9 +238,6 @@ local readyStatusOverrides = [
           )
         ||| % defaultFilters,
 
-        // Count of providers with at least one failed call in the current rate window -
-        // distinct from providerApiErrorRate (the overall failure percentage): this says how
-        // widespread the failures are, not just how severe.
         providersWithErrorsCount: |||
           count(
             count(
@@ -266,7 +251,6 @@ local readyStatusOverrides = [
           )
         ||| % defaultFilters,
 
-        // Breakdown by status/provider/namespace - never by individual resource name.
         externalSecretsByReadyStatus: |||
           sum(
             externalsecret_status_condition{
@@ -288,8 +272,6 @@ local readyStatusOverrides = [
           )
         ||| % defaultFilters,
 
-        // Not ready - lists the individual offending resources, this is a "what's broken"
-        // list rather than a per-resource filter/legend grouping.
         notReadyExternalSecrets: notReadyQuery('externalsecret_status_condition', defaultFilters.namespaced, namespacedBy),
         notReadyClusterExternalSecrets: notReadyQuery('clusterexternalsecret_status_condition', defaultFilters.default, clusterBy),
         notReadySecretStores: notReadyQuery('secretstore_status_condition', defaultFilters.namespaced, namespacedBy),
@@ -298,9 +280,6 @@ local readyStatusOverrides = [
         notReadyClusterPushSecrets: notReadyQuery('clusterpushsecret_status_condition', defaultFilters.default, clusterBy),
       };
 
-      // Every "Not Ready" table below is the same shape: a Name (+ Namespace, for namespaced
-      // CRDs) column, a boolean "Not Ready" column, and a link back to the Resources dashboard
-      // pre-filtered to that resource.
       local notReadyTablePanel(title, description, query, namespaced, linkTitle, linkUrl) =
         mixinUtils.dashboards.tablePanel(
           title,
@@ -665,11 +644,6 @@ local readyStatusOverrides = [
         ),
       };
 
-      // Panels are grouped by concern, each with its own row: fleet-wide totals, Provider
-      // integration health, then each CRD's counts/ready% (and its Cluster variant, where one
-      // exists) plus what's currently not ready. Nothing here mixes panels from different
-      // concerns into a shared row. Every row fills the full 24-wide grid symmetrically:
-      // same-concern panels only, stat panels capped at width 6.
       local rows =
         [
           row.new('Summary') +

@@ -12,8 +12,6 @@ local query = variable.query;
     cluster: '%(clusterLabel)s="$cluster"' % config,
     job: 'job=~"$job"',
     provider: 'provider=~"$provider"',
-    // Exposed so dashboard queries can group/legend/table-key off the same configurable
-    // label (see config.libsonnet's namespaceLabel comment for why this isn't just "namespace").
     namespaceLabel: config.namespaceLabel,
     namespace: '%(namespaceLabel)s=~"$namespace"' % config,
     name: 'name=~"$name"',
@@ -38,8 +36,6 @@ local query = variable.query;
       %(provider)s
     ||| % this,
 
-    // Namespace-only, no resource name - for overview-level queries spanning all of ESO's
-    // namespaced resource kinds (ExternalSecret, SecretStore, PushSecret) at once.
     namespaced: |||
       %(base)s,
       %(namespace)s

@@ -11,13 +11,9 @@
     showMultiCluster: false,
     clusterLabel: 'cluster',
 
-    // ESO's namespaced resource metrics (externalsecret_*, secretstore_*, pushsecret_*) emit
-    // their own "namespace" label for the resource's namespace. Most Prometheus setups
-    // (kube-prometheus-stack's PodMonitor/ServiceMonitor included) scrape with
-    // honor_labels: false, which means the target's own namespace overwrites that label and
-    // the resource's real namespace survives as "exported_namespace" instead. If your setup
-    // scrapes with honor_labels: true (so the metric's own "namespace" label is preserved),
-    // override this to 'namespace'.
+    // With honor_labels: false (the common default), the resource's own "namespace" label is
+    // overwritten by the scrape target's and survives as "exported_namespace" instead.
+    // Override to 'namespace' if your setup scrapes with honor_labels: true.
     namespaceLabel: 'exported_namespace',
 
     grafanaUrl: 'https://grafana.com',
