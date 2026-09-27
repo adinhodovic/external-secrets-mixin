@@ -19,10 +19,8 @@ local query = variable.query;
     name: 'name=~"$name"',
     // Literal match for single selection
     nameSingle: 'name="$name"',
-    secretStoreNamespace: '%(namespaceLabel)s=~"$secret_store_namespace"' % config,
     secretStoreName: 'name=~"$secret_store_name"',
     secretStoreNameSingle: 'name="$secret_store_name"',
-    pushSecretNamespace: '%(namespaceLabel)s=~"$push_secret_namespace"' % config,
     pushSecretName: 'name=~"$push_secret_name"',
     pushSecretNameSingle: 'name="$push_secret_name"',
 
@@ -61,25 +59,25 @@ local query = variable.query;
 
     secretStore: |||
       %(base)s,
-      %(secretStoreNamespace)s,
+      %(namespace)s,
       %(secretStoreName)s
     ||| % this,
 
     secretStoreSingle: |||
       %(base)s,
-      %(secretStoreNamespace)s,
+      %(namespace)s,
       %(secretStoreNameSingle)s
     ||| % this,
 
     pushSecret: |||
       %(base)s,
-      %(pushSecretNamespace)s,
+      %(namespace)s,
       %(pushSecretName)s
     ||| % this,
 
     pushSecretSingle: |||
       %(base)s,
-      %(pushSecretNamespace)s,
+      %(namespace)s,
       %(pushSecretNameSingle)s
     ||| % this,
   },
@@ -176,23 +174,10 @@ local query = variable.query;
       query.selectionOptions.withMulti(false) +
       query.selectionOptions.withIncludeAll(false),
 
-    secretStoreNamespace:
-      query.new(
-        'secret_store_namespace',
-        'label_values(secretstore_status_condition{%(cluster)s, %(job)s}, %(namespaceLabel)s)' % defaultFilters
-      ) +
-      query.withDatasourceFromVariable(this.datasource) +
-      query.withSort() +
-      query.generalOptions.withLabel('Namespace') +
-      query.selectionOptions.withMulti(true) +
-      query.selectionOptions.withIncludeAll(true) +
-      query.refresh.onLoad() +
-      query.refresh.onTime(),
-
     secretStoreName:
       query.new(
         'secret_store_name',
-        'label_values(secretstore_status_condition{%(cluster)s, %(job)s, %(secretStoreNamespace)s}, name)' % defaultFilters
+        'label_values(secretstore_status_condition{%(cluster)s, %(job)s, %(namespace)s}, name)' % defaultFilters
       ) +
       query.withDatasourceFromVariable(this.datasource) +
       query.withSort() +
@@ -207,23 +192,10 @@ local query = variable.query;
       query.selectionOptions.withMulti(false) +
       query.selectionOptions.withIncludeAll(false),
 
-    pushSecretNamespace:
-      query.new(
-        'push_secret_namespace',
-        'label_values(pushsecret_status_condition{%(cluster)s, %(job)s}, %(namespaceLabel)s)' % defaultFilters
-      ) +
-      query.withDatasourceFromVariable(this.datasource) +
-      query.withSort() +
-      query.generalOptions.withLabel('Namespace') +
-      query.selectionOptions.withMulti(true) +
-      query.selectionOptions.withIncludeAll(true) +
-      query.refresh.onLoad() +
-      query.refresh.onTime(),
-
     pushSecretName:
       query.new(
         'push_secret_name',
-        'label_values(pushsecret_status_condition{%(cluster)s, %(job)s, %(pushSecretNamespace)s}, name)' % defaultFilters
+        'label_values(pushsecret_status_condition{%(cluster)s, %(job)s, %(namespace)s}, name)' % defaultFilters
       ) +
       query.withDatasourceFromVariable(this.datasource) +
       query.withSort() +

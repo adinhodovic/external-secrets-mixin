@@ -50,6 +50,12 @@
         interval: '15m',
       },
 
+      clusterExternalSecretNotReady: {
+        enabled: true,
+        severity: 'warning',
+        interval: '15m',
+      },
+
       secretStoreNotReady: {
         enabled: true,
         severity: 'warning',
@@ -63,6 +69,12 @@
       },
 
       pushSecretNotReady: {
+        enabled: true,
+        severity: 'warning',
+        interval: '15m',
+      },
+
+      clusterPushSecretNotReady: {
         enabled: true,
         severity: 'warning',
         interval: '15m',

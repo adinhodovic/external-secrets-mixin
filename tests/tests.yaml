@@ -12,7 +12,7 @@ tests:
         values: "0+10x10"
     alert_rule_test:
       - eval_time: 10m
-        alertname: ExternalSecretsOperatorSyncErrors
+        alertname: ExternalSecretsSyncErrors
         exp_alerts:
           - exp_labels:
               exported_namespace: default
@@ -28,7 +28,7 @@ tests:
         values: "1+0x20"
     alert_rule_test:
       - eval_time: 15m
-        alertname: ExternalSecretsOperatorExternalSecretNotReady
+        alertname: ExternalSecretsExternalSecretNotReady
         exp_alerts:
           - exp_labels:
               exported_namespace: default
@@ -42,11 +42,28 @@ tests:
               dashboard_url: "https://grafana.com/d/eso-resources-skj2/eso-resources?var-namespace=default&var-name=test-es"
   - interval: 1m
     input_series:
+      - series: 'clusterexternalsecret_status_condition{job="external-secrets", name="test-ces", condition="Ready", status="False"}'
+        values: "1+0x20"
+    alert_rule_test:
+      - eval_time: 15m
+        alertname: ExternalSecretsClusterExternalSecretNotReady
+        exp_alerts:
+          - exp_labels:
+              name: test-ces
+              condition: Ready
+              status: "False"
+              severity: warning
+            exp_annotations:
+              summary: "External Secrets Operator ClusterExternalSecret is not ready."
+              description: "ClusterExternalSecret test-ces has not been Ready for the past 15m."
+              dashboard_url: "https://grafana.com/d/eso-resources-skj2/eso-resources?var-name=test-ces"
+  - interval: 1m
+    input_series:
       - series: 'secretstore_status_condition{job="external-secrets", exported_namespace="default", name="test-ss", condition="Ready", status="False"}'
         values: "1+0x20"
     alert_rule_test:
       - eval_time: 15m
-        alertname: ExternalSecretsOperatorSecretStoreNotReady
+        alertname: ExternalSecretsSecretStoreNotReady
         exp_alerts:
           - exp_labels:
               exported_namespace: default
@@ -57,14 +74,14 @@ tests:
             exp_annotations:
               summary: "External Secrets Operator SecretStore is not ready."
               description: "SecretStore test-ss in default has not been Ready for the past 15m."
-              dashboard_url: "https://grafana.com/d/eso-resources-skj2/eso-resources?var-secret_store_namespace=default&var-secret_store_name=test-ss"
+              dashboard_url: "https://grafana.com/d/eso-resources-skj2/eso-resources?var-namespace=default&var-secret_store_name=test-ss"
   - interval: 1m
     input_series:
       - series: 'clustersecretstore_status_condition{job="external-secrets", name="test-css", condition="Ready", status="False"}'
         values: "1+0x20"
     alert_rule_test:
       - eval_time: 15m
-        alertname: ExternalSecretsOperatorClusterSecretStoreNotReady
+        alertname: ExternalSecretsClusterSecretStoreNotReady
         exp_alerts:
           - exp_labels:
               name: test-css
@@ -81,7 +98,7 @@ tests:
         values: "1+0x20"
     alert_rule_test:
       - eval_time: 15m
-        alertname: ExternalSecretsOperatorPushSecretNotReady
+        alertname: ExternalSecretsPushSecretNotReady
         exp_alerts:
           - exp_labels:
               exported_namespace: default
@@ -92,7 +109,24 @@ tests:
             exp_annotations:
               summary: "External Secrets Operator PushSecret is not ready."
               description: "PushSecret test-ps in default has not been Ready for the past 15m."
-              dashboard_url: "https://grafana.com/d/eso-resources-skj2/eso-resources?var-push_secret_namespace=default&var-push_secret_name=test-ps"
+              dashboard_url: "https://grafana.com/d/eso-resources-skj2/eso-resources?var-namespace=default&var-push_secret_name=test-ps"
+  - interval: 1m
+    input_series:
+      - series: 'clusterpushsecret_status_condition{job="external-secrets", name="test-cps", condition="Ready", status="False"}'
+        values: "1+0x20"
+    alert_rule_test:
+      - eval_time: 15m
+        alertname: ExternalSecretsClusterPushSecretNotReady
+        exp_alerts:
+          - exp_labels:
+              name: test-cps
+              condition: Ready
+              status: "False"
+              severity: warning
+            exp_annotations:
+              summary: "External Secrets Operator ClusterPushSecret is not ready."
+              description: "ClusterPushSecret test-cps has not been Ready for the past 15m."
+              dashboard_url: "https://grafana.com/d/eso-resources-skj2/eso-resources?var-push_secret_name=test-cps"
   - interval: 1m
     input_series:
       - series: 'externalsecret_provider_api_calls_count{job="external-secrets", provider="aws-secretsmanager", call="GetSecret", status="success"}'
@@ -101,7 +135,7 @@ tests:
         values: "0+10x10"
     alert_rule_test:
       - eval_time: 10m
-        alertname: ExternalSecretsOperatorProviderApiHighErrorRate
+        alertname: ExternalSecretsProviderApiHighErrorRate
         exp_alerts:
           - exp_labels:
               provider: aws-secretsmanager

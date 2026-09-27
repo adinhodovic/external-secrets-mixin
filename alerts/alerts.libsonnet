@@ -6,7 +6,7 @@
         name: 'external-secrets-operator',
         rules: if $._config.alerts.enabled then std.prune([
           if $._config.alerts.externalSecretSyncErrors.enabled then {
-            alert: 'ExternalSecretsOperatorSyncErrors',
+            alert: 'ExternalSecretsSyncErrors',
             expr: |||
               (
                 sum(
@@ -46,7 +46,7 @@
             },
           },
           if $._config.alerts.externalSecretNotReady.enabled then {
-            alert: 'ExternalSecretsOperatorExternalSecretNotReady',
+            alert: 'ExternalSecretsExternalSecretNotReady',
             expr: |||
               sum(
                 externalsecret_status_condition{
@@ -69,8 +69,30 @@
               dashboard_url: $._config.dashboardUrls['eso-resources'] + '?var-namespace={{ $labels.%(namespaceLabel)s }}&var-name={{ $labels.name }}' % $._config + clusterVariableQueryString,
             },
           },
+          if $._config.alerts.clusterExternalSecretNotReady.enabled then {
+            alert: 'ExternalSecretsClusterExternalSecretNotReady',
+            expr: |||
+              sum(
+                clusterexternalsecret_status_condition{
+                  %(esoSelector)s,
+                  condition="Ready",
+                  status="False"
+                }
+              ) by (name, condition, status)
+              == 1
+            ||| % $._config,
+            'for': $._config.alerts.clusterExternalSecretNotReady.interval,
+            labels: {
+              severity: $._config.alerts.clusterExternalSecretNotReady.severity,
+            },
+            annotations: {
+              summary: 'External Secrets Operator ClusterExternalSecret is not ready.',
+              description: 'ClusterExternalSecret {{ $labels.name }} has not been Ready for the past %(interval)s.' % $._config.alerts.clusterExternalSecretNotReady,
+              dashboard_url: $._config.dashboardUrls['eso-resources'] + '?var-name={{ $labels.name }}' + clusterVariableQueryString,
+            },
+          },
           if $._config.alerts.secretStoreNotReady.enabled then {
-            alert: 'ExternalSecretsOperatorSecretStoreNotReady',
+            alert: 'ExternalSecretsSecretStoreNotReady',
             expr: |||
               sum(
                 secretstore_status_condition{
@@ -90,11 +112,11 @@
               description: 'SecretStore {{ $labels.name }} in {{ $labels.%(namespaceLabel)s }} has not been Ready for the past %(interval)s.' % (
                 $._config.alerts.secretStoreNotReady { namespaceLabel: $._config.namespaceLabel }
               ),
-              dashboard_url: $._config.dashboardUrls['eso-resources'] + '?var-secret_store_namespace={{ $labels.%(namespaceLabel)s }}&var-secret_store_name={{ $labels.name }}' % $._config + clusterVariableQueryString,
+              dashboard_url: $._config.dashboardUrls['eso-resources'] + '?var-namespace={{ $labels.%(namespaceLabel)s }}&var-secret_store_name={{ $labels.name }}' % $._config + clusterVariableQueryString,
             },
           },
           if $._config.alerts.clusterSecretStoreNotReady.enabled then {
-            alert: 'ExternalSecretsOperatorClusterSecretStoreNotReady',
+            alert: 'ExternalSecretsClusterSecretStoreNotReady',
             expr: |||
               sum(
                 clustersecretstore_status_condition{
@@ -116,7 +138,7 @@
             },
           },
           if $._config.alerts.pushSecretNotReady.enabled then {
-            alert: 'ExternalSecretsOperatorPushSecretNotReady',
+            alert: 'ExternalSecretsPushSecretNotReady',
             expr: |||
               sum(
                 pushsecret_status_condition{
@@ -136,11 +158,33 @@
               description: 'PushSecret {{ $labels.name }} in {{ $labels.%(namespaceLabel)s }} has not been Ready for the past %(interval)s.' % (
                 $._config.alerts.pushSecretNotReady { namespaceLabel: $._config.namespaceLabel }
               ),
-              dashboard_url: $._config.dashboardUrls['eso-resources'] + '?var-push_secret_namespace={{ $labels.%(namespaceLabel)s }}&var-push_secret_name={{ $labels.name }}' % $._config + clusterVariableQueryString,
+              dashboard_url: $._config.dashboardUrls['eso-resources'] + '?var-namespace={{ $labels.%(namespaceLabel)s }}&var-push_secret_name={{ $labels.name }}' % $._config + clusterVariableQueryString,
+            },
+          },
+          if $._config.alerts.clusterPushSecretNotReady.enabled then {
+            alert: 'ExternalSecretsClusterPushSecretNotReady',
+            expr: |||
+              sum(
+                clusterpushsecret_status_condition{
+                  %(esoSelector)s,
+                  condition="Ready",
+                  status="False"
+                }
+              ) by (name, condition, status)
+              == 1
+            ||| % $._config,
+            'for': $._config.alerts.clusterPushSecretNotReady.interval,
+            labels: {
+              severity: $._config.alerts.clusterPushSecretNotReady.severity,
+            },
+            annotations: {
+              summary: 'External Secrets Operator ClusterPushSecret is not ready.',
+              description: 'ClusterPushSecret {{ $labels.name }} has not been Ready for the past %(interval)s.' % $._config.alerts.clusterPushSecretNotReady,
+              dashboard_url: $._config.dashboardUrls['eso-resources'] + '?var-push_secret_name={{ $labels.name }}' + clusterVariableQueryString,
             },
           },
           if $._config.alerts.providerApiErrorRate.enabled then {
-            alert: 'ExternalSecretsOperatorProviderApiHighErrorRate',
+            alert: 'ExternalSecretsProviderApiHighErrorRate',
             expr: |||
               (
                 sum(

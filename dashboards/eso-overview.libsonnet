@@ -569,13 +569,14 @@ local tbPanelOptions = tablePanel.panelOptions;
             ],
           ),
 
-        externalSecretsByReadyStatusPieChart:
-          mixinUtils.dashboards.pieChartPanel(
+        externalSecretsByReadyStatusTimeSeries:
+          mixinUtils.dashboards.timeSeriesPanel(
             'External Secrets by Ready Status',
             'short',
             queries.externalSecretsByReadyStatus,
             '{{ status }}',
-            description='Current split of ExternalSecrets by their Ready condition status. Any non-True slice needs investigation.',
+            description='Count of ExternalSecrets by their Ready condition status over time. A rising non-True count needs investigation.',
+            stack='normal',
           ),
 
         providerApiCallRateByProviderTimeSeries:
@@ -612,7 +613,7 @@ local tbPanelOptions = tablePanel.panelOptions;
           queries.notReadySecretStores,
           true,
           'Go To Secret Store',
-          '/d/%s/eso-resources?var-secret_store_namespace=${__data.fields.Namespace}&var-secret_store_name=${__data.fields.Name}' % $._config.dashboardIds['eso-resources']
+          '/d/%s/eso-resources?var-namespace=${__data.fields.Namespace}&var-secret_store_name=${__data.fields.Name}' % $._config.dashboardIds['eso-resources']
         ),
 
         notReadyClusterSecretStoresTable: notReadyTablePanel(
@@ -630,7 +631,7 @@ local tbPanelOptions = tablePanel.panelOptions;
           queries.notReadyPushSecrets,
           true,
           'Go To Push Secret',
-          '/d/%s/eso-resources?var-push_secret_namespace=${__data.fields.Namespace}&var-push_secret_name=${__data.fields.Name}' % $._config.dashboardIds['eso-resources']
+          '/d/%s/eso-resources?var-namespace=${__data.fields.Namespace}&var-push_secret_name=${__data.fields.Name}' % $._config.dashboardIds['eso-resources']
         ),
 
         notReadyClusterPushSecretsTable: notReadyTablePanel(
@@ -715,10 +716,10 @@ local tbPanelOptions = tablePanel.panelOptions;
         ) +
         grid.wrapPanels(
           [
-            panels.externalSecretsByReadyStatusPieChart,
+            panels.externalSecretsByReadyStatusTimeSeries,
           ],
           panelWidth=24,
-          panelHeight=6,
+          panelHeight=8,
           startY=23
         ) +
         grid.wrapPanels(
@@ -728,12 +729,12 @@ local tbPanelOptions = tablePanel.panelOptions;
           ],
           panelWidth=12,
           panelHeight=8,
-          startY=29
+          startY=31
         ) +
         [
           row.new('Secret Stores') +
           row.gridPos.withX(0) +
-          row.gridPos.withY(37) +
+          row.gridPos.withY(39) +
           row.gridPos.withW(24) +
           row.gridPos.withH(1),
         ] +
@@ -746,7 +747,7 @@ local tbPanelOptions = tablePanel.panelOptions;
           ],
           panelWidth=6,
           panelHeight=4,
-          startY=38
+          startY=40
         ) +
         grid.wrapPanels(
           [
@@ -755,12 +756,12 @@ local tbPanelOptions = tablePanel.panelOptions;
           ],
           panelWidth=12,
           panelHeight=8,
-          startY=42
+          startY=44
         ) +
         [
           row.new('Push Secrets') +
           row.gridPos.withX(0) +
-          row.gridPos.withY(50) +
+          row.gridPos.withY(52) +
           row.gridPos.withW(24) +
           row.gridPos.withH(1),
         ] +
@@ -773,7 +774,7 @@ local tbPanelOptions = tablePanel.panelOptions;
           ],
           panelWidth=6,
           panelHeight=4,
-          startY=51
+          startY=53
         ) +
         grid.wrapPanels(
           [
@@ -782,7 +783,7 @@ local tbPanelOptions = tablePanel.panelOptions;
           ],
           panelWidth=12,
           panelHeight=8,
-          startY=55
+          startY=57
         );
 
       mixinUtils.dashboards.bypassDashboardValidation +

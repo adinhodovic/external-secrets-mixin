@@ -13,6 +13,20 @@ local tbStandardOptions = tablePanel.standardOptions;
 local tbQueryOptions = tablePanel.queryOptions;
 local tbOverride = tbStandardOptions.override;
 
+// Ready=True renders green, Ready=False (or absent) renders red on the bool_yes_no unit.
+local readyOverride =
+  tbOverride.byName.new('Ready') +
+  tbOverride.byName.withPropertiesFromOptions(
+    tbStandardOptions.withUnit('bool_yes_no') +
+    tbStandardOptions.color.withMode('thresholds') +
+    tbStandardOptions.thresholds.withSteps([
+      tbStandardOptions.threshold.step.withValue(0) +
+      tbStandardOptions.threshold.step.withColor('red'),
+      tbStandardOptions.threshold.step.withValue(1) +
+      tbStandardOptions.threshold.step.withColor('green'),
+    ])
+  );
+
 {
   local dashboardName = 'eso-resources',
   grafanaDashboards+:: {
@@ -27,9 +41,7 @@ local tbOverride = tbStandardOptions.override;
         defaultVariables.namespace,
         defaultVariables.name,
         defaultVariables.provider,
-        defaultVariables.secretStoreNamespace,
         defaultVariables.secretStoreName,
-        defaultVariables.pushSecretNamespace,
         defaultVariables.pushSecretName,
       ];
 
@@ -432,10 +444,7 @@ local tbOverride = tbStandardOptions.override;
               tbOverride.byName.withPropertiesFromOptions(
                 tbStandardOptions.withUnit('ns')
               ),
-              tbOverride.byName.new('Ready') +
-              tbOverride.byName.withPropertiesFromOptions(
-                tbStandardOptions.withUnit('bool_yes_no')
-              ),
+              readyOverride,
             ],
           ),
 
@@ -480,10 +489,7 @@ local tbOverride = tbStandardOptions.override;
               }),
             ],
             overrides=[
-              tbOverride.byName.new('Ready') +
-              tbOverride.byName.withPropertiesFromOptions(
-                tbStandardOptions.withUnit('bool_yes_no')
-              ),
+              readyOverride,
               tbOverride.byName.new('Reconcile Duration') +
               tbOverride.byName.withPropertiesFromOptions(
                 tbStandardOptions.withUnit('ns')
@@ -544,10 +550,7 @@ local tbOverride = tbStandardOptions.override;
               }),
             ],
             overrides=[
-              tbOverride.byName.new('Ready') +
-              tbOverride.byName.withPropertiesFromOptions(
-                tbStandardOptions.withUnit('bool_yes_no')
-              ),
+              readyOverride,
               tbOverride.byName.new('Reconcile Duration') +
               tbOverride.byName.withPropertiesFromOptions(
                 tbStandardOptions.withUnit('ns')
@@ -586,10 +589,7 @@ local tbOverride = tbStandardOptions.override;
               }),
             ],
             overrides=[
-              tbOverride.byName.new('Ready') +
-              tbOverride.byName.withPropertiesFromOptions(
-                tbStandardOptions.withUnit('bool_yes_no')
-              ),
+              readyOverride,
               tbOverride.byName.new('Reconcile Duration') +
               tbOverride.byName.withPropertiesFromOptions(
                 tbStandardOptions.withUnit('ns')
@@ -650,10 +650,7 @@ local tbOverride = tbStandardOptions.override;
               }),
             ],
             overrides=[
-              tbOverride.byName.new('Ready') +
-              tbOverride.byName.withPropertiesFromOptions(
-                tbStandardOptions.withUnit('bool_yes_no')
-              ),
+              readyOverride,
               tbOverride.byName.new('Reconcile Duration') +
               tbOverride.byName.withPropertiesFromOptions(
                 tbStandardOptions.withUnit('ns')
@@ -692,10 +689,7 @@ local tbOverride = tbStandardOptions.override;
               }),
             ],
             overrides=[
-              tbOverride.byName.new('Ready') +
-              tbOverride.byName.withPropertiesFromOptions(
-                tbStandardOptions.withUnit('bool_yes_no')
-              ),
+              readyOverride,
               tbOverride.byName.new('Reconcile Duration') +
               tbOverride.byName.withPropertiesFromOptions(
                 tbStandardOptions.withUnit('ns')
@@ -703,6 +697,25 @@ local tbOverride = tbStandardOptions.override;
             ],
           ),
       };
+
+      // Rows for the less-frequently-needed CRD kinds (everything past ExternalSecret) start
+      // collapsed so the dashboard opens on the Provider and External Secret content only;
+      // their panels are nested under the row via withPanels rather than laid out as
+      // top-level, so collapsing them doesn't leave a vertical gap. panelGroups is a list of
+      // {panels, width, height} stacked top to bottom starting at y + 1.
+      local collapsedRow(title, y, panelGroups) =
+        local step(acc, group) = {
+          out: acc.out + grid.wrapPanels(group.panels, group.width, group.height, startY=acc.y),
+          y: acc.y + group.height,
+        };
+        local nestedPanels = std.foldl(step, panelGroups, { out: [], y: y + 1 }).out;
+        row.new(title) +
+        row.gridPos.withX(0) +
+        row.gridPos.withY(y) +
+        row.gridPos.withW(24) +
+        row.gridPos.withH(1) +
+        row.withCollapsed(true) +
+        row.withPanels(nestedPanels);
 
       // No fleet-wide summary stats here - those live on the Overview dashboard. Every row
       // below is breakdown content for one CRD: per-resource pies/time series (top 20/40 by
@@ -758,120 +771,27 @@ local tbOverride = tbStandardOptions.override;
           startY=24
         ) +
         [
-          row.new('Cluster External Secret') +
-          row.gridPos.withX(0) +
-          row.gridPos.withY(36) +
-          row.gridPos.withW(24) +
-          row.gridPos.withH(1),
-        ] +
-        grid.wrapPanels(
-          [
-            panels.clusterExternalSecretReconcileDurationTimeSeries,
-          ],
-          panelWidth=24,
-          panelHeight=8,
-          startY=37
-        ) +
-        grid.wrapPanels(
-          [
-            panels.clusterExternalSecretTable,
-          ],
-          panelWidth=24,
-          panelHeight=10,
-          startY=45
-        ) +
-        [
-          row.new('Secret Store') +
-          row.gridPos.withX(0) +
-          row.gridPos.withY(55) +
-          row.gridPos.withW(24) +
-          row.gridPos.withH(1),
-        ] +
-        grid.wrapPanels(
-          [
-            panels.secretStoreReconcileDurationTimeSeries,
-          ],
-          panelWidth=24,
-          panelHeight=8,
-          startY=56
-        ) +
-        grid.wrapPanels(
-          [
-            panels.secretStoreTable,
-          ],
-          panelWidth=24,
-          panelHeight=10,
-          startY=64
-        ) +
-        [
-          row.new('Cluster Secret Store') +
-          row.gridPos.withX(0) +
-          row.gridPos.withY(74) +
-          row.gridPos.withW(24) +
-          row.gridPos.withH(1),
-        ] +
-        grid.wrapPanels(
-          [
-            panels.clusterSecretStoreReconcileDurationTimeSeries,
-          ],
-          panelWidth=24,
-          panelHeight=8,
-          startY=75
-        ) +
-        grid.wrapPanels(
-          [
-            panels.clusterSecretStoreTable,
-          ],
-          panelWidth=24,
-          panelHeight=10,
-          startY=83
-        ) +
-        [
-          row.new('Push Secret') +
-          row.gridPos.withX(0) +
-          row.gridPos.withY(93) +
-          row.gridPos.withW(24) +
-          row.gridPos.withH(1),
-        ] +
-        grid.wrapPanels(
-          [
-            panels.pushSecretReconcileDurationTimeSeries,
-          ],
-          panelWidth=24,
-          panelHeight=8,
-          startY=94
-        ) +
-        grid.wrapPanels(
-          [
-            panels.pushSecretTable,
-          ],
-          panelWidth=24,
-          panelHeight=10,
-          startY=102
-        ) +
-        [
-          row.new('Cluster Push Secret') +
-          row.gridPos.withX(0) +
-          row.gridPos.withY(112) +
-          row.gridPos.withW(24) +
-          row.gridPos.withH(1),
-        ] +
-        grid.wrapPanels(
-          [
-            panels.clusterPushSecretReconcileDurationTimeSeries,
-          ],
-          panelWidth=24,
-          panelHeight=8,
-          startY=113
-        ) +
-        grid.wrapPanels(
-          [
-            panels.clusterPushSecretTable,
-          ],
-          panelWidth=24,
-          panelHeight=10,
-          startY=121
-        );
+          collapsedRow('Cluster External Secret', 36, [
+            { panels: [panels.clusterExternalSecretReconcileDurationTimeSeries], width: 24, height: 8 },
+            { panels: [panels.clusterExternalSecretTable], width: 24, height: 10 },
+          ]),
+          collapsedRow('Secret Store', 37, [
+            { panels: [panels.secretStoreReconcileDurationTimeSeries], width: 24, height: 8 },
+            { panels: [panels.secretStoreTable], width: 24, height: 10 },
+          ]),
+          collapsedRow('Cluster Secret Store', 38, [
+            { panels: [panels.clusterSecretStoreReconcileDurationTimeSeries], width: 24, height: 8 },
+            { panels: [panels.clusterSecretStoreTable], width: 24, height: 10 },
+          ]),
+          collapsedRow('Push Secret', 39, [
+            { panels: [panels.pushSecretReconcileDurationTimeSeries], width: 24, height: 8 },
+            { panels: [panels.pushSecretTable], width: 24, height: 10 },
+          ]),
+          collapsedRow('Cluster Push Secret', 40, [
+            { panels: [panels.clusterPushSecretReconcileDurationTimeSeries], width: 24, height: 8 },
+            { panels: [panels.clusterPushSecretTable], width: 24, height: 10 },
+          ]),
+        ];
 
       mixinUtils.dashboards.bypassDashboardValidation +
       dashboard.new(

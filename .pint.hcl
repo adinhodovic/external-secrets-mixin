@@ -1,41 +1,55 @@
 rule {
   match {
-    name = "ExternalSecretsOperatorSyncErrors"
+    name = "ExternalSecretsSyncErrors"
   }
   disable = ["promql/regexp"]
 }
 
 rule {
   match {
-    name = "ExternalSecretsOperatorExternalSecretNotReady"
+    name = "ExternalSecretsExternalSecretNotReady"
   }
   disable = ["promql/regexp"]
 }
 
 rule {
   match {
-    name = "ExternalSecretsOperatorSecretStoreNotReady"
+    name = "ExternalSecretsClusterExternalSecretNotReady"
   }
   disable = ["promql/regexp"]
 }
 
 rule {
   match {
-    name = "ExternalSecretsOperatorClusterSecretStoreNotReady"
+    name = "ExternalSecretsSecretStoreNotReady"
   }
   disable = ["promql/regexp"]
 }
 
 rule {
   match {
-    name = "ExternalSecretsOperatorPushSecretNotReady"
+    name = "ExternalSecretsClusterSecretStoreNotReady"
   }
   disable = ["promql/regexp"]
 }
 
 rule {
   match {
-    name = "ExternalSecretsOperatorProviderApiHighErrorRate"
+    name = "ExternalSecretsPushSecretNotReady"
+  }
+  disable = ["promql/regexp"]
+}
+
+rule {
+  match {
+    name = "ExternalSecretsClusterPushSecretNotReady"
+  }
+  disable = ["promql/regexp"]
+}
+
+rule {
+  match {
+    name = "ExternalSecretsProviderApiHighErrorRate"
   }
   disable = ["promql/regexp"]
 }
