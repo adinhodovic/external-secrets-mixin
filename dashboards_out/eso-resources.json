@@ -1,0 +1,1534 @@
+{
+   "__inputs": [ ],
+   "__requires": [ ],
+   "annotations": {
+      "list": [ ]
+   },
+   "description": "A deep-dive, per-resource breakdown dashboard for the resources managed by the External Secrets Operator: ExternalSecret, ClusterExternalSecret, SecretStore, ClusterSecretStore, PushSecret and ClusterPushSecret. Shows sync call rates and errors, reconcile duration, readiness and provider API call health broken down per resource - see the Overview dashboard for fleet-wide totals. The dashboards were generated using [external-secrets-operator-mixin](https://github.com/adinhodovic/external-secrets-operator-mixin). Open issues and create feature requests in the repository.",
+   "editable": false,
+   "links": [
+      {
+         "asDropdown": true,
+         "includeVars": false,
+         "keepTime": true,
+         "tags": [
+            "external-secrets",
+            "eso-mixin",
+            "kubernetes"
+         ],
+         "targetBlank": true,
+         "title": "External Secrets Operator",
+         "type": "dashboards"
+      }
+   ],
+   "panels": [
+      {
+         "collapsed": false,
+         "gridPos": {
+            "h": 1,
+            "w": 24,
+            "x": 0,
+            "y": 0
+         },
+         "id": 1,
+         "title": "External Secret",
+         "type": "row"
+      },
+      {
+         "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+         },
+         "description": "Distribution of sync call volume across ExternalSecrets over the past hour. Identifies which secrets are synced the most frequently.",
+         "fieldConfig": {
+            "defaults": {
+               "unit": "reqps"
+            },
+            "overrides": [ ]
+         },
+         "gridPos": {
+            "h": 6,
+            "w": 12,
+            "x": 0,
+            "y": 1
+         },
+         "id": 2,
+         "options": {
+            "displayLabels": [
+               "percent"
+            ],
+            "legend": {
+               "displayMode": "table",
+               "placement": "right",
+               "showLegend": true,
+               "values": [
+                  "percent"
+               ]
+            },
+            "tooltip": {
+               "mode": "multi",
+               "sort": "desc"
+            }
+         },
+         "pluginVersion": "v11.4.0",
+         "targets": [
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "$datasource"
+               },
+               "expr": "topk(20,\n  sum(\n    rate(\n      externalsecret_sync_calls_total{\n        cluster=\"$cluster\",\njob=~\"$job\"\n,\nexported_namespace=~\"$namespace\",\nname=~\"$name\"\n\n      }[1h]\n    )\n  ) by (exported_namespace, name)\n)\n",
+               "instant": true,
+               "legendFormat": "{{ exported_namespace }}/{{ name }}"
+            }
+         ],
+         "title": "Sync Calls by External Secret [1h, Top 20]",
+         "type": "piechart"
+      },
+      {
+         "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+         },
+         "description": "Distribution of sync errors across ExternalSecrets over the past hour. A concentration of errors on a single secret usually points to a specific misconfiguration, while broad errors point to a provider-wide issue.",
+         "fieldConfig": {
+            "defaults": {
+               "unit": "reqps"
+            },
+            "overrides": [ ]
+         },
+         "gridPos": {
+            "h": 6,
+            "w": 12,
+            "x": 12,
+            "y": 1
+         },
+         "id": 3,
+         "options": {
+            "displayLabels": [
+               "percent"
+            ],
+            "legend": {
+               "displayMode": "table",
+               "placement": "right",
+               "showLegend": true,
+               "values": [
+                  "percent"
+               ]
+            },
+            "tooltip": {
+               "mode": "multi",
+               "sort": "desc"
+            }
+         },
+         "pluginVersion": "v11.4.0",
+         "targets": [
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "$datasource"
+               },
+               "expr": "topk(20,\n  sum(\n    rate(\n      externalsecret_sync_calls_error{\n        cluster=\"$cluster\",\njob=~\"$job\"\n,\nexported_namespace=~\"$namespace\",\nname=~\"$name\"\n\n      }[1h]\n    )\n  ) by (exported_namespace, name)\n)\n",
+               "instant": true,
+               "legendFormat": "{{ exported_namespace }}/{{ name }}"
+            }
+         ],
+         "title": "Sync Errors by External Secret [1h, Top 20]",
+         "type": "piechart"
+      },
+      {
+         "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+         },
+         "description": "Rate of ExternalSecret sync attempts versus failed sync attempts over time for the selected filters.",
+         "fieldConfig": {
+            "defaults": {
+               "custom": {
+                  "fillOpacity": 10
+               },
+               "unit": "reqps"
+            }
+         },
+         "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 7
+         },
+         "id": 4,
+         "options": {
+            "legend": {
+               "calcs": [
+                  "mean",
+                  "max"
+               ],
+               "displayMode": "table",
+               "placement": "right",
+               "showLegend": true,
+               "sortBy": "mean",
+               "sortDesc": true
+            },
+            "tooltip": {
+               "mode": "multi",
+               "sort": "desc"
+            }
+         },
+         "pluginVersion": "v11.4.0",
+         "targets": [
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "$datasource"
+               },
+               "exemplar": false,
+               "expr": "sum(\n  rate(\n    externalsecret_sync_calls_total{\n      cluster=\"$cluster\",\njob=~\"$job\"\n,\nexported_namespace=~\"$namespace\",\nname=~\"$name\"\n\n    }[$__rate_interval]\n  )\n)\n",
+               "legendFormat": "Total"
+            },
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "$datasource"
+               },
+               "exemplar": false,
+               "expr": "sum(\n  rate(\n    externalsecret_sync_calls_error{\n      cluster=\"$cluster\",\njob=~\"$job\"\n,\nexported_namespace=~\"$namespace\",\nname=~\"$name\"\n\n    }[$__rate_interval]\n  )\n)\n",
+               "legendFormat": "Errors"
+            }
+         ],
+         "title": "Sync Calls",
+         "type": "timeseries"
+      },
+      {
+         "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+         },
+         "description": "Last reported reconcile duration per ExternalSecret. Rising durations indicate slower provider responses or larger secret payloads.",
+         "fieldConfig": {
+            "defaults": {
+               "custom": {
+                  "axisSoftMin": 0,
+                  "fillOpacity": 100,
+                  "lineWidth": 1,
+                  "stacking": {
+                     "mode": "normal"
+                  }
+               },
+               "unit": "ns"
+            }
+         },
+         "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 7
+         },
+         "id": 5,
+         "options": {
+            "legend": {
+               "calcs": [
+                  "mean",
+                  "max"
+               ],
+               "displayMode": "table",
+               "placement": "right",
+               "showLegend": true,
+               "sortBy": "mean",
+               "sortDesc": true
+            },
+            "tooltip": {
+               "mode": "multi",
+               "sort": "desc"
+            }
+         },
+         "pluginVersion": "v11.4.0",
+         "targets": [
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "$datasource"
+               },
+               "exemplar": false,
+               "expr": "topk(20,\n  sum(\n  externalsecret_reconcile_duration{\n    cluster=\"$cluster\",\njob=~\"$job\"\n,\nexported_namespace=~\"$namespace\",\nname=~\"$name\"\n\n  }\n) by (exported_namespace, name)\n\n)\n",
+               "legendFormat": "{{ exported_namespace }}/{{ name }}"
+            }
+         ],
+         "title": "Reconcile Duration by External Secret [Top 20]",
+         "type": "timeseries"
+      },
+      {
+         "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+         },
+         "description": "An overview table showing various metrics by ExternalSecret [1h].",
+         "fieldConfig": {
+            "defaults": {
+               "thresholds": {
+                  "steps": [ ]
+               },
+               "unit": "short"
+            },
+            "overrides": [
+               {
+                  "matcher": {
+                     "id": "byName",
+                     "options": "Sync Rate"
+                  },
+                  "properties": [
+                     {
+                        "id": "unit",
+                        "value": "reqps"
+                     }
+                  ]
+               },
+               {
+                  "matcher": {
+                     "id": "byName",
+                     "options": "Sync Error Rate"
+                  },
+                  "properties": [
+                     {
+                        "id": "unit",
+                        "value": "reqps"
+                     }
+                  ]
+               },
+               {
+                  "matcher": {
+                     "id": "byName",
+                     "options": "Reconcile Duration"
+                  },
+                  "properties": [
+                     {
+                        "id": "unit",
+                        "value": "ns"
+                     }
+                  ]
+               },
+               {
+                  "matcher": {
+                     "id": "byName",
+                     "options": "Ready"
+                  },
+                  "properties": [
+                     {
+                        "id": "unit",
+                        "value": "bool_yes_no"
+                     }
+                  ]
+               }
+            ]
+         },
+         "gridPos": {
+            "h": 12,
+            "w": 24,
+            "x": 0,
+            "y": 15
+         },
+         "id": 6,
+         "options": {
+            "footer": {
+               "enablePagination": true
+            },
+            "sortBy": [
+               {
+                  "desc": true,
+                  "displayName": "Sync Rate"
+               }
+            ]
+         },
+         "pluginVersion": "v11.4.0",
+         "targets": [
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "$datasource"
+               },
+               "expr": "topk(40,\n  sum(\n    rate(\n      externalsecret_sync_calls_total{\n        cluster=\"$cluster\",\njob=~\"$job\"\n,\nexported_namespace=~\"$namespace\",\nname=~\"$name\"\n\n      }[1h]\n    )\n  ) by (exported_namespace, name)\n)\n",
+               "format": "table",
+               "instant": true
+            },
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "$datasource"
+               },
+               "expr": "sum(\n  rate(\n    externalsecret_sync_calls_error{\n      cluster=\"$cluster\",\njob=~\"$job\"\n,\nexported_namespace=~\"$namespace\",\nname=~\"$name\"\n\n    }[1h]\n  )\n) by (exported_namespace, name)\nand on (exported_namespace, name) (\n  topk(40,\n  sum(\n    rate(\n      externalsecret_sync_calls_total{\n        cluster=\"$cluster\",\njob=~\"$job\"\n,\nexported_namespace=~\"$namespace\",\nname=~\"$name\"\n\n      }[1h]\n    )\n  ) by (exported_namespace, name)\n)\n\n)\n\n",
+               "format": "table",
+               "instant": true
+            },
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "$datasource"
+               },
+               "expr": "avg(\n  avg_over_time(\n    externalsecret_reconcile_duration{\n      cluster=\"$cluster\",\njob=~\"$job\"\n,\nexported_namespace=~\"$namespace\",\nname=~\"$name\"\n\n    }[1h]\n  )\n) by (exported_namespace, name)\nand on (exported_namespace, name) (\n  topk(40,\n  sum(\n    rate(\n      externalsecret_sync_calls_total{\n        cluster=\"$cluster\",\njob=~\"$job\"\n,\nexported_namespace=~\"$namespace\",\nname=~\"$name\"\n\n      }[1h]\n    )\n  ) by (exported_namespace, name)\n)\n\n)\n\n",
+               "format": "table",
+               "instant": true
+            },
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "$datasource"
+               },
+               "expr": "max(\n  externalsecret_status_condition{\n    cluster=\"$cluster\",\njob=~\"$job\"\n,\nexported_namespace=~\"$namespace\",\nname=~\"$name\"\n,\n    condition=\"Ready\",\n    status=\"True\"\n  }\n) by (exported_namespace, name)\nand on (exported_namespace, name) (\n  topk(40,\n  sum(\n    rate(\n      externalsecret_sync_calls_total{\n        cluster=\"$cluster\",\njob=~\"$job\"\n,\nexported_namespace=~\"$namespace\",\nname=~\"$name\"\n\n      }[1h]\n    )\n  ) by (exported_namespace, name)\n)\n\n)\n\n",
+               "format": "table",
+               "instant": true
+            }
+         ],
+         "title": "External Secret Overview [1h]",
+         "transformations": [
+            {
+               "id": "merge"
+            },
+            {
+               "id": "organize",
+               "options": {
+                  "excludeByName": {
+                     "Time": true
+                  },
+                  "indexByName": {
+                     "Value #A": 2,
+                     "Value #B": 3,
+                     "Value #C": 4,
+                     "Value #D": 5,
+                     "exported_namespace": 0,
+                     "name": 1
+                  },
+                  "renameByName": {
+                     "Value #A": "Sync Rate",
+                     "Value #B": "Sync Error Rate",
+                     "Value #C": "Reconcile Duration",
+                     "Value #D": "Ready",
+                     "exported_namespace": "Namespace",
+                     "name": "Name"
+                  }
+               }
+            }
+         ],
+         "type": "table"
+      },
+      {
+         "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+         },
+         "description": "Rate of API calls made to the upstream provider, broken down by provider and API call type (e.g. GetSecret, PushSecret).",
+         "fieldConfig": {
+            "defaults": {
+               "custom": {
+                  "axisSoftMin": 0,
+                  "fillOpacity": 100,
+                  "lineWidth": 1,
+                  "stacking": {
+                     "mode": "normal"
+                  }
+               },
+               "unit": "reqps"
+            }
+         },
+         "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 27
+         },
+         "id": 7,
+         "options": {
+            "legend": {
+               "calcs": [
+                  "mean",
+                  "max"
+               ],
+               "displayMode": "table",
+               "placement": "right",
+               "showLegend": true,
+               "sortBy": "mean",
+               "sortDesc": true
+            },
+            "tooltip": {
+               "mode": "multi",
+               "sort": "desc"
+            }
+         },
+         "pluginVersion": "v11.4.0",
+         "targets": [
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "$datasource"
+               },
+               "exemplar": false,
+               "expr": "topk(20,\n  sum(\n  rate(\n    externalsecret_provider_api_calls_count{\n      cluster=\"$cluster\",\njob=~\"$job\"\n,\nprovider=~\"$provider\"\n\n    }[$__rate_interval]\n  )\n) by (provider, call)\n\n)\n",
+               "legendFormat": "{{ provider }} - {{ call }}"
+            }
+         ],
+         "title": "Provider API Call Rate by Call [Top 20]",
+         "type": "timeseries"
+      },
+      {
+         "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+         },
+         "description": "Rate of failed API calls made to the upstream provider, broken down by provider and API call type.",
+         "fieldConfig": {
+            "defaults": {
+               "custom": {
+                  "axisSoftMin": 0,
+                  "fillOpacity": 100,
+                  "lineWidth": 1,
+                  "stacking": {
+                     "mode": "normal"
+                  }
+               },
+               "unit": "reqps"
+            }
+         },
+         "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 27
+         },
+         "id": 8,
+         "options": {
+            "legend": {
+               "calcs": [
+                  "mean",
+                  "max"
+               ],
+               "displayMode": "table",
+               "placement": "right",
+               "showLegend": true,
+               "sortBy": "mean",
+               "sortDesc": true
+            },
+            "tooltip": {
+               "mode": "multi",
+               "sort": "desc"
+            }
+         },
+         "pluginVersion": "v11.4.0",
+         "targets": [
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "$datasource"
+               },
+               "exemplar": false,
+               "expr": "topk(20,\n  sum(\n  rate(\n    externalsecret_provider_api_calls_count{\n      cluster=\"$cluster\",\njob=~\"$job\"\n,\nprovider=~\"$provider\"\n,\n      status=\"error\"\n    }[$__rate_interval]\n  )\n) by (provider, call)\n\n)\n",
+               "legendFormat": "{{ provider }} - {{ call }}"
+            }
+         ],
+         "title": "Provider API Call Error Rate by Call [Top 20]",
+         "type": "timeseries"
+      },
+      {
+         "collapsed": false,
+         "gridPos": {
+            "h": 1,
+            "w": 24,
+            "x": 0,
+            "y": 35
+         },
+         "id": 9,
+         "title": "Cluster External Secret",
+         "type": "row"
+      },
+      {
+         "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+         },
+         "description": "Last reported reconcile duration per ClusterExternalSecret.",
+         "fieldConfig": {
+            "defaults": {
+               "custom": {
+                  "axisSoftMin": 0,
+                  "fillOpacity": 100,
+                  "lineWidth": 1,
+                  "stacking": {
+                     "mode": "normal"
+                  }
+               },
+               "unit": "ns"
+            }
+         },
+         "gridPos": {
+            "h": 8,
+            "w": 24,
+            "x": 0,
+            "y": 36
+         },
+         "id": 10,
+         "options": {
+            "legend": {
+               "calcs": [
+                  "mean",
+                  "max"
+               ],
+               "displayMode": "table",
+               "placement": "right",
+               "showLegend": true,
+               "sortBy": "mean",
+               "sortDesc": true
+            },
+            "tooltip": {
+               "mode": "multi",
+               "sort": "desc"
+            }
+         },
+         "pluginVersion": "v11.4.0",
+         "targets": [
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "$datasource"
+               },
+               "exemplar": false,
+               "expr": "topk(20,\n  sum(\n  clusterexternalsecret_reconcile_duration{\n    cluster=\"$cluster\",\njob=~\"$job\"\n\n\n  }\n) by (name)\n\n)\n",
+               "legendFormat": "{{ name }}"
+            }
+         ],
+         "title": "Cluster External Secret Reconcile Duration [Top 20]",
+         "type": "timeseries"
+      },
+      {
+         "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+         },
+         "description": "An overview table showing readiness and reconcile duration by ClusterExternalSecret [1h].",
+         "fieldConfig": {
+            "defaults": {
+               "thresholds": {
+                  "steps": [ ]
+               },
+               "unit": "short"
+            },
+            "overrides": [
+               {
+                  "matcher": {
+                     "id": "byName",
+                     "options": "Ready"
+                  },
+                  "properties": [
+                     {
+                        "id": "unit",
+                        "value": "bool_yes_no"
+                     }
+                  ]
+               },
+               {
+                  "matcher": {
+                     "id": "byName",
+                     "options": "Reconcile Duration"
+                  },
+                  "properties": [
+                     {
+                        "id": "unit",
+                        "value": "ns"
+                     }
+                  ]
+               }
+            ]
+         },
+         "gridPos": {
+            "h": 10,
+            "w": 24,
+            "x": 0,
+            "y": 44
+         },
+         "id": 11,
+         "options": {
+            "footer": {
+               "enablePagination": true
+            },
+            "sortBy": [
+               {
+                  "desc": false,
+                  "displayName": "Ready"
+               }
+            ]
+         },
+         "pluginVersion": "v11.4.0",
+         "targets": [
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "$datasource"
+               },
+               "expr": "max(\n  clusterexternalsecret_status_condition{\n    cluster=\"$cluster\",\njob=~\"$job\"\n\n,\n    condition=\"Ready\",\n    status=\"True\"\n  }\n) by (name)\nand on (name) (\n  topk(40,\n  max(\n    clusterexternalsecret_status_condition{\n      cluster=\"$cluster\",\njob=~\"$job\"\n\n,\n      condition=\"Ready\"\n    }\n  ) by (name)\n)\n\n)\n\n",
+               "format": "table",
+               "instant": true
+            },
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "$datasource"
+               },
+               "expr": "avg(\n  avg_over_time(\n    clusterexternalsecret_reconcile_duration{\n      cluster=\"$cluster\",\njob=~\"$job\"\n\n\n    }[1h]\n  )\n) by (name)\nand on (name) (\n  topk(40,\n  max(\n    clusterexternalsecret_status_condition{\n      cluster=\"$cluster\",\njob=~\"$job\"\n\n,\n      condition=\"Ready\"\n    }\n  ) by (name)\n)\n\n)\n\n",
+               "format": "table",
+               "instant": true
+            }
+         ],
+         "title": "Cluster External Secret Overview [1h]",
+         "transformations": [
+            {
+               "id": "merge"
+            },
+            {
+               "id": "organize",
+               "options": {
+                  "excludeByName": {
+                     "Time": true
+                  },
+                  "renameByName": {
+                     "Value #A": "Ready",
+                     "Value #B": "Reconcile Duration",
+                     "name": "Name"
+                  }
+               }
+            }
+         ],
+         "type": "table"
+      },
+      {
+         "collapsed": false,
+         "gridPos": {
+            "h": 1,
+            "w": 24,
+            "x": 0,
+            "y": 54
+         },
+         "id": 12,
+         "title": "Secret Store",
+         "type": "row"
+      },
+      {
+         "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+         },
+         "description": "Last reported reconcile duration per SecretStore.",
+         "fieldConfig": {
+            "defaults": {
+               "custom": {
+                  "axisSoftMin": 0,
+                  "fillOpacity": 100,
+                  "lineWidth": 1,
+                  "stacking": {
+                     "mode": "normal"
+                  }
+               },
+               "unit": "ns"
+            }
+         },
+         "gridPos": {
+            "h": 8,
+            "w": 24,
+            "x": 0,
+            "y": 55
+         },
+         "id": 13,
+         "options": {
+            "legend": {
+               "calcs": [
+                  "mean",
+                  "max"
+               ],
+               "displayMode": "table",
+               "placement": "right",
+               "showLegend": true,
+               "sortBy": "mean",
+               "sortDesc": true
+            },
+            "tooltip": {
+               "mode": "multi",
+               "sort": "desc"
+            }
+         },
+         "pluginVersion": "v11.4.0",
+         "targets": [
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "$datasource"
+               },
+               "exemplar": false,
+               "expr": "topk(20,\n  sum(\n  secretstore_reconcile_duration{\n    cluster=\"$cluster\",\njob=~\"$job\"\n,\nexported_namespace=~\"$secret_store_namespace\",\nname=~\"$secret_store_name\"\n\n  }\n) by (exported_namespace, name)\n\n)\n",
+               "legendFormat": "{{ exported_namespace }}/{{ name }}"
+            }
+         ],
+         "title": "Secret Store Reconcile Duration [Top 20]",
+         "type": "timeseries"
+      },
+      {
+         "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+         },
+         "description": "An overview table showing readiness and reconcile duration by SecretStore [1h].",
+         "fieldConfig": {
+            "defaults": {
+               "thresholds": {
+                  "steps": [ ]
+               },
+               "unit": "short"
+            },
+            "overrides": [
+               {
+                  "matcher": {
+                     "id": "byName",
+                     "options": "Ready"
+                  },
+                  "properties": [
+                     {
+                        "id": "unit",
+                        "value": "bool_yes_no"
+                     }
+                  ]
+               },
+               {
+                  "matcher": {
+                     "id": "byName",
+                     "options": "Reconcile Duration"
+                  },
+                  "properties": [
+                     {
+                        "id": "unit",
+                        "value": "ns"
+                     }
+                  ]
+               }
+            ]
+         },
+         "gridPos": {
+            "h": 10,
+            "w": 24,
+            "x": 0,
+            "y": 63
+         },
+         "id": 14,
+         "options": {
+            "footer": {
+               "enablePagination": true
+            },
+            "sortBy": [
+               {
+                  "desc": false,
+                  "displayName": "Ready"
+               }
+            ]
+         },
+         "pluginVersion": "v11.4.0",
+         "targets": [
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "$datasource"
+               },
+               "expr": "max(\n  secretstore_status_condition{\n    cluster=\"$cluster\",\njob=~\"$job\"\n,\nexported_namespace=~\"$secret_store_namespace\",\nname=~\"$secret_store_name\"\n,\n    condition=\"Ready\",\n    status=\"True\"\n  }\n) by (exported_namespace, name)\nand on (exported_namespace, name) (\n  topk(40,\n  max(\n    secretstore_status_condition{\n      cluster=\"$cluster\",\njob=~\"$job\"\n,\nexported_namespace=~\"$secret_store_namespace\",\nname=~\"$secret_store_name\"\n,\n      condition=\"Ready\"\n    }\n  ) by (exported_namespace, name)\n)\n\n)\n\n",
+               "format": "table",
+               "instant": true
+            },
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "$datasource"
+               },
+               "expr": "avg(\n  avg_over_time(\n    secretstore_reconcile_duration{\n      cluster=\"$cluster\",\njob=~\"$job\"\n,\nexported_namespace=~\"$secret_store_namespace\",\nname=~\"$secret_store_name\"\n\n    }[1h]\n  )\n) by (exported_namespace, name)\nand on (exported_namespace, name) (\n  topk(40,\n  max(\n    secretstore_status_condition{\n      cluster=\"$cluster\",\njob=~\"$job\"\n,\nexported_namespace=~\"$secret_store_namespace\",\nname=~\"$secret_store_name\"\n,\n      condition=\"Ready\"\n    }\n  ) by (exported_namespace, name)\n)\n\n)\n\n",
+               "format": "table",
+               "instant": true
+            }
+         ],
+         "title": "Secret Store Overview [1h]",
+         "transformations": [
+            {
+               "id": "merge"
+            },
+            {
+               "id": "organize",
+               "options": {
+                  "excludeByName": {
+                     "Time": true
+                  },
+                  "renameByName": {
+                     "Value #A": "Ready",
+                     "Value #B": "Reconcile Duration",
+                     "exported_namespace": "Namespace",
+                     "name": "Name"
+                  }
+               }
+            }
+         ],
+         "type": "table"
+      },
+      {
+         "collapsed": false,
+         "gridPos": {
+            "h": 1,
+            "w": 24,
+            "x": 0,
+            "y": 73
+         },
+         "id": 15,
+         "title": "Cluster Secret Store",
+         "type": "row"
+      },
+      {
+         "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+         },
+         "description": "Last reported reconcile duration per ClusterSecretStore.",
+         "fieldConfig": {
+            "defaults": {
+               "custom": {
+                  "axisSoftMin": 0,
+                  "fillOpacity": 100,
+                  "lineWidth": 1,
+                  "stacking": {
+                     "mode": "normal"
+                  }
+               },
+               "unit": "ns"
+            }
+         },
+         "gridPos": {
+            "h": 8,
+            "w": 24,
+            "x": 0,
+            "y": 74
+         },
+         "id": 16,
+         "options": {
+            "legend": {
+               "calcs": [
+                  "mean",
+                  "max"
+               ],
+               "displayMode": "table",
+               "placement": "right",
+               "showLegend": true,
+               "sortBy": "mean",
+               "sortDesc": true
+            },
+            "tooltip": {
+               "mode": "multi",
+               "sort": "desc"
+            }
+         },
+         "pluginVersion": "v11.4.0",
+         "targets": [
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "$datasource"
+               },
+               "exemplar": false,
+               "expr": "topk(20,\n  sum(\n  clustersecretstore_reconcile_duration{\n    cluster=\"$cluster\",\njob=~\"$job\"\n\n\n  }\n) by (name)\n\n)\n",
+               "legendFormat": "{{ name }}"
+            }
+         ],
+         "title": "Cluster Secret Store Reconcile Duration [Top 20]",
+         "type": "timeseries"
+      },
+      {
+         "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+         },
+         "description": "An overview table showing readiness and reconcile duration by ClusterSecretStore [1h].",
+         "fieldConfig": {
+            "defaults": {
+               "thresholds": {
+                  "steps": [ ]
+               },
+               "unit": "short"
+            },
+            "overrides": [
+               {
+                  "matcher": {
+                     "id": "byName",
+                     "options": "Ready"
+                  },
+                  "properties": [
+                     {
+                        "id": "unit",
+                        "value": "bool_yes_no"
+                     }
+                  ]
+               },
+               {
+                  "matcher": {
+                     "id": "byName",
+                     "options": "Reconcile Duration"
+                  },
+                  "properties": [
+                     {
+                        "id": "unit",
+                        "value": "ns"
+                     }
+                  ]
+               }
+            ]
+         },
+         "gridPos": {
+            "h": 10,
+            "w": 24,
+            "x": 0,
+            "y": 82
+         },
+         "id": 17,
+         "options": {
+            "footer": {
+               "enablePagination": true
+            },
+            "sortBy": [
+               {
+                  "desc": false,
+                  "displayName": "Ready"
+               }
+            ]
+         },
+         "pluginVersion": "v11.4.0",
+         "targets": [
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "$datasource"
+               },
+               "expr": "max(\n  clustersecretstore_status_condition{\n    cluster=\"$cluster\",\njob=~\"$job\"\n\n,\n    condition=\"Ready\",\n    status=\"True\"\n  }\n) by (name)\nand on (name) (\n  topk(40,\n  max(\n    clustersecretstore_status_condition{\n      cluster=\"$cluster\",\njob=~\"$job\"\n\n,\n      condition=\"Ready\"\n    }\n  ) by (name)\n)\n\n)\n\n",
+               "format": "table",
+               "instant": true
+            },
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "$datasource"
+               },
+               "expr": "avg(\n  avg_over_time(\n    clustersecretstore_reconcile_duration{\n      cluster=\"$cluster\",\njob=~\"$job\"\n\n\n    }[1h]\n  )\n) by (name)\nand on (name) (\n  topk(40,\n  max(\n    clustersecretstore_status_condition{\n      cluster=\"$cluster\",\njob=~\"$job\"\n\n,\n      condition=\"Ready\"\n    }\n  ) by (name)\n)\n\n)\n\n",
+               "format": "table",
+               "instant": true
+            }
+         ],
+         "title": "Cluster Secret Store Overview [1h]",
+         "transformations": [
+            {
+               "id": "merge"
+            },
+            {
+               "id": "organize",
+               "options": {
+                  "excludeByName": {
+                     "Time": true
+                  },
+                  "renameByName": {
+                     "Value #A": "Ready",
+                     "Value #B": "Reconcile Duration",
+                     "name": "Name"
+                  }
+               }
+            }
+         ],
+         "type": "table"
+      },
+      {
+         "collapsed": false,
+         "gridPos": {
+            "h": 1,
+            "w": 24,
+            "x": 0,
+            "y": 92
+         },
+         "id": 18,
+         "title": "Push Secret",
+         "type": "row"
+      },
+      {
+         "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+         },
+         "description": "Last reported reconcile duration per PushSecret.",
+         "fieldConfig": {
+            "defaults": {
+               "custom": {
+                  "axisSoftMin": 0,
+                  "fillOpacity": 100,
+                  "lineWidth": 1,
+                  "stacking": {
+                     "mode": "normal"
+                  }
+               },
+               "unit": "ns"
+            }
+         },
+         "gridPos": {
+            "h": 8,
+            "w": 24,
+            "x": 0,
+            "y": 93
+         },
+         "id": 19,
+         "options": {
+            "legend": {
+               "calcs": [
+                  "mean",
+                  "max"
+               ],
+               "displayMode": "table",
+               "placement": "right",
+               "showLegend": true,
+               "sortBy": "mean",
+               "sortDesc": true
+            },
+            "tooltip": {
+               "mode": "multi",
+               "sort": "desc"
+            }
+         },
+         "pluginVersion": "v11.4.0",
+         "targets": [
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "$datasource"
+               },
+               "exemplar": false,
+               "expr": "topk(20,\n  sum(\n  pushsecret_reconcile_duration{\n    cluster=\"$cluster\",\njob=~\"$job\"\n,\nexported_namespace=~\"$push_secret_namespace\",\nname=~\"$push_secret_name\"\n\n  }\n) by (exported_namespace, name)\n\n)\n",
+               "legendFormat": "{{ exported_namespace }}/{{ name }}"
+            }
+         ],
+         "title": "Push Secret Reconcile Duration [Top 20]",
+         "type": "timeseries"
+      },
+      {
+         "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+         },
+         "description": "An overview table showing readiness and reconcile duration by PushSecret [1h].",
+         "fieldConfig": {
+            "defaults": {
+               "thresholds": {
+                  "steps": [ ]
+               },
+               "unit": "short"
+            },
+            "overrides": [
+               {
+                  "matcher": {
+                     "id": "byName",
+                     "options": "Ready"
+                  },
+                  "properties": [
+                     {
+                        "id": "unit",
+                        "value": "bool_yes_no"
+                     }
+                  ]
+               },
+               {
+                  "matcher": {
+                     "id": "byName",
+                     "options": "Reconcile Duration"
+                  },
+                  "properties": [
+                     {
+                        "id": "unit",
+                        "value": "ns"
+                     }
+                  ]
+               }
+            ]
+         },
+         "gridPos": {
+            "h": 10,
+            "w": 24,
+            "x": 0,
+            "y": 101
+         },
+         "id": 20,
+         "options": {
+            "footer": {
+               "enablePagination": true
+            },
+            "sortBy": [
+               {
+                  "desc": false,
+                  "displayName": "Ready"
+               }
+            ]
+         },
+         "pluginVersion": "v11.4.0",
+         "targets": [
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "$datasource"
+               },
+               "expr": "max(\n  pushsecret_status_condition{\n    cluster=\"$cluster\",\njob=~\"$job\"\n,\nexported_namespace=~\"$push_secret_namespace\",\nname=~\"$push_secret_name\"\n,\n    condition=\"Ready\",\n    status=\"True\"\n  }\n) by (exported_namespace, name)\nand on (exported_namespace, name) (\n  topk(40,\n  max(\n    pushsecret_status_condition{\n      cluster=\"$cluster\",\njob=~\"$job\"\n,\nexported_namespace=~\"$push_secret_namespace\",\nname=~\"$push_secret_name\"\n,\n      condition=\"Ready\"\n    }\n  ) by (exported_namespace, name)\n)\n\n)\n\n",
+               "format": "table",
+               "instant": true
+            },
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "$datasource"
+               },
+               "expr": "avg(\n  avg_over_time(\n    pushsecret_reconcile_duration{\n      cluster=\"$cluster\",\njob=~\"$job\"\n,\nexported_namespace=~\"$push_secret_namespace\",\nname=~\"$push_secret_name\"\n\n    }[1h]\n  )\n) by (exported_namespace, name)\nand on (exported_namespace, name) (\n  topk(40,\n  max(\n    pushsecret_status_condition{\n      cluster=\"$cluster\",\njob=~\"$job\"\n,\nexported_namespace=~\"$push_secret_namespace\",\nname=~\"$push_secret_name\"\n,\n      condition=\"Ready\"\n    }\n  ) by (exported_namespace, name)\n)\n\n)\n\n",
+               "format": "table",
+               "instant": true
+            }
+         ],
+         "title": "Push Secret Overview [1h]",
+         "transformations": [
+            {
+               "id": "merge"
+            },
+            {
+               "id": "organize",
+               "options": {
+                  "excludeByName": {
+                     "Time": true
+                  },
+                  "renameByName": {
+                     "Value #A": "Ready",
+                     "Value #B": "Reconcile Duration",
+                     "exported_namespace": "Namespace",
+                     "name": "Name"
+                  }
+               }
+            }
+         ],
+         "type": "table"
+      },
+      {
+         "collapsed": false,
+         "gridPos": {
+            "h": 1,
+            "w": 24,
+            "x": 0,
+            "y": 111
+         },
+         "id": 21,
+         "title": "Cluster Push Secret",
+         "type": "row"
+      },
+      {
+         "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+         },
+         "description": "Last reported reconcile duration per ClusterPushSecret.",
+         "fieldConfig": {
+            "defaults": {
+               "custom": {
+                  "axisSoftMin": 0,
+                  "fillOpacity": 100,
+                  "lineWidth": 1,
+                  "stacking": {
+                     "mode": "normal"
+                  }
+               },
+               "unit": "ns"
+            }
+         },
+         "gridPos": {
+            "h": 8,
+            "w": 24,
+            "x": 0,
+            "y": 112
+         },
+         "id": 22,
+         "options": {
+            "legend": {
+               "calcs": [
+                  "mean",
+                  "max"
+               ],
+               "displayMode": "table",
+               "placement": "right",
+               "showLegend": true,
+               "sortBy": "mean",
+               "sortDesc": true
+            },
+            "tooltip": {
+               "mode": "multi",
+               "sort": "desc"
+            }
+         },
+         "pluginVersion": "v11.4.0",
+         "targets": [
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "$datasource"
+               },
+               "exemplar": false,
+               "expr": "topk(20,\n  sum(\n  clusterpushsecret_reconcile_duration{\n    cluster=\"$cluster\",\njob=~\"$job\"\n\n\n  }\n) by (name)\n\n)\n",
+               "legendFormat": "{{ name }}"
+            }
+         ],
+         "title": "Cluster Push Secret Reconcile Duration [Top 20]",
+         "type": "timeseries"
+      },
+      {
+         "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+         },
+         "description": "An overview table showing readiness and reconcile duration by ClusterPushSecret [1h].",
+         "fieldConfig": {
+            "defaults": {
+               "thresholds": {
+                  "steps": [ ]
+               },
+               "unit": "short"
+            },
+            "overrides": [
+               {
+                  "matcher": {
+                     "id": "byName",
+                     "options": "Ready"
+                  },
+                  "properties": [
+                     {
+                        "id": "unit",
+                        "value": "bool_yes_no"
+                     }
+                  ]
+               },
+               {
+                  "matcher": {
+                     "id": "byName",
+                     "options": "Reconcile Duration"
+                  },
+                  "properties": [
+                     {
+                        "id": "unit",
+                        "value": "ns"
+                     }
+                  ]
+               }
+            ]
+         },
+         "gridPos": {
+            "h": 10,
+            "w": 24,
+            "x": 0,
+            "y": 120
+         },
+         "id": 23,
+         "options": {
+            "footer": {
+               "enablePagination": true
+            },
+            "sortBy": [
+               {
+                  "desc": false,
+                  "displayName": "Ready"
+               }
+            ]
+         },
+         "pluginVersion": "v11.4.0",
+         "targets": [
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "$datasource"
+               },
+               "expr": "max(\n  clusterpushsecret_status_condition{\n    cluster=\"$cluster\",\njob=~\"$job\"\n\n,\n    condition=\"Ready\",\n    status=\"True\"\n  }\n) by (name)\nand on (name) (\n  topk(40,\n  max(\n    clusterpushsecret_status_condition{\n      cluster=\"$cluster\",\njob=~\"$job\"\n\n,\n      condition=\"Ready\"\n    }\n  ) by (name)\n)\n\n)\n\n",
+               "format": "table",
+               "instant": true
+            },
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "$datasource"
+               },
+               "expr": "avg(\n  avg_over_time(\n    clusterpushsecret_reconcile_duration{\n      cluster=\"$cluster\",\njob=~\"$job\"\n\n\n    }[1h]\n  )\n) by (name)\nand on (name) (\n  topk(40,\n  max(\n    clusterpushsecret_status_condition{\n      cluster=\"$cluster\",\njob=~\"$job\"\n\n,\n      condition=\"Ready\"\n    }\n  ) by (name)\n)\n\n)\n\n",
+               "format": "table",
+               "instant": true
+            }
+         ],
+         "title": "Cluster Push Secret Overview [1h]",
+         "transformations": [
+            {
+               "id": "merge"
+            },
+            {
+               "id": "organize",
+               "options": {
+                  "excludeByName": {
+                     "Time": true
+                  },
+                  "renameByName": {
+                     "Value #A": "Ready",
+                     "Value #B": "Reconcile Duration",
+                     "name": "Name"
+                  }
+               }
+            }
+         ],
+         "type": "table"
+      }
+   ],
+   "schemaVersion": 39,
+   "tags": [
+      "external-secrets",
+      "eso-mixin",
+      "kubernetes"
+   ],
+   "templating": {
+      "list": [
+         {
+            "current": {
+               "selected": true,
+               "text": "default",
+               "value": "default"
+            },
+            "label": "Data source",
+            "name": "datasource",
+            "query": "prometheus",
+            "type": "datasource"
+         },
+         {
+            "datasource": {
+               "type": "prometheus",
+               "uid": "${datasource}"
+            },
+            "hide": 2,
+            "label": "Cluster",
+            "name": "cluster",
+            "query": "label_values(externalsecret_status_condition{}, cluster)",
+            "refresh": 2,
+            "sort": 1,
+            "type": "query"
+         },
+         {
+            "datasource": {
+               "type": "prometheus",
+               "uid": "${datasource}"
+            },
+            "includeAll": true,
+            "label": "Job",
+            "multi": true,
+            "name": "job",
+            "query": "label_values(externalsecret_status_condition{cluster=\"$cluster\"}, job)",
+            "refresh": 2,
+            "sort": 1,
+            "type": "query"
+         },
+         {
+            "datasource": {
+               "type": "prometheus",
+               "uid": "${datasource}"
+            },
+            "includeAll": true,
+            "label": "Namespace",
+            "multi": true,
+            "name": "namespace",
+            "query": "label_values(externalsecret_status_condition{cluster=\"$cluster\", job=~\"$job\"}, exported_namespace)",
+            "refresh": 2,
+            "sort": 1,
+            "type": "query"
+         },
+         {
+            "datasource": {
+               "type": "prometheus",
+               "uid": "${datasource}"
+            },
+            "includeAll": true,
+            "label": "External Secret",
+            "multi": true,
+            "name": "name",
+            "query": "label_values(externalsecret_status_condition{cluster=\"$cluster\", job=~\"$job\", exported_namespace=~\"$namespace\"}, name)",
+            "refresh": 2,
+            "sort": 1,
+            "type": "query"
+         },
+         {
+            "datasource": {
+               "type": "prometheus",
+               "uid": "${datasource}"
+            },
+            "includeAll": true,
+            "label": "Provider",
+            "multi": true,
+            "name": "provider",
+            "query": "label_values(externalsecret_provider_api_calls_count{cluster=\"$cluster\", job=~\"$job\"}, provider)",
+            "refresh": 2,
+            "sort": 1,
+            "type": "query"
+         },
+         {
+            "datasource": {
+               "type": "prometheus",
+               "uid": "${datasource}"
+            },
+            "includeAll": true,
+            "label": "Namespace",
+            "multi": true,
+            "name": "secret_store_namespace",
+            "query": "label_values(secretstore_status_condition{cluster=\"$cluster\", job=~\"$job\"}, exported_namespace)",
+            "refresh": 2,
+            "sort": 1,
+            "type": "query"
+         },
+         {
+            "datasource": {
+               "type": "prometheus",
+               "uid": "${datasource}"
+            },
+            "includeAll": true,
+            "label": "Secret Store",
+            "multi": true,
+            "name": "secret_store_name",
+            "query": "label_values(secretstore_status_condition{cluster=\"$cluster\", job=~\"$job\", exported_namespace=~\"$secret_store_namespace\"}, name)",
+            "refresh": 2,
+            "sort": 1,
+            "type": "query"
+         },
+         {
+            "datasource": {
+               "type": "prometheus",
+               "uid": "${datasource}"
+            },
+            "includeAll": true,
+            "label": "Namespace",
+            "multi": true,
+            "name": "push_secret_namespace",
+            "query": "label_values(pushsecret_status_condition{cluster=\"$cluster\", job=~\"$job\"}, exported_namespace)",
+            "refresh": 2,
+            "sort": 1,
+            "type": "query"
+         },
+         {
+            "datasource": {
+               "type": "prometheus",
+               "uid": "${datasource}"
+            },
+            "includeAll": true,
+            "label": "Push Secret",
+            "multi": true,
+            "name": "push_secret_name",
+            "query": "label_values(pushsecret_status_condition{cluster=\"$cluster\", job=~\"$job\", exported_namespace=~\"$push_secret_namespace\"}, name)",
+            "refresh": 2,
+            "sort": 1,
+            "type": "query"
+         }
+      ]
+   },
+   "time": {
+      "from": "now-6h",
+      "to": "now"
+   },
+   "timezone": "utc",
+   "title": "External Secrets Operator / Resources",
+   "uid": "eso-resources-skj2"
+}

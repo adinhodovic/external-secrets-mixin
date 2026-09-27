@@ -1,0 +1,46 @@
+exclusions:
+  template-job-rule:
+    reason: Jobs are not set to multi in our case.
+  template-instance-rule:
+    reason: We don't use instances.
+  panel-datasource-rule:
+    reason: Using a datasource for each panel.
+  panel-title-description-rule:
+    reason: TODO(adinhodovic)
+  target-instance-rule:
+  target-rate-interval-rule:
+    reason: Intented 1h range.
+    entries:
+      - dashboard: External Secrets Operator / Resources
+        panel: External Secret Overview [1h]
+        targetIdx: 0
+      - dashboard: External Secrets Operator / Resources
+        panel: External Secret Overview [1h]
+        targetIdx: 1
+      - dashboard: External Secrets Operator / Resources
+        panel: External Secret Overview [1h]
+        targetIdx: 2
+      - dashboard: External Secrets Operator / Resources
+        panel: Secret Store Overview [1h]
+        targetIdx: 0
+      - dashboard: External Secrets Operator / Resources
+        panel: Secret Store Overview [1h]
+        targetIdx: 1
+      - dashboard: External Secrets Operator / Resources
+        panel: Cluster Secret Store Overview [1h]
+        targetIdx: 0
+      - dashboard: External Secrets Operator / Resources
+        panel: Cluster Secret Store Overview [1h]
+        targetIdx: 1
+      - dashboard: External Secrets Operator / Resources
+        panel: Push Secret Overview [1h]
+        targetIdx: 0
+      - dashboard: External Secrets Operator / Resources
+        panel: Push Secret Overview [1h]
+        targetIdx: 1
+      - dashboard: External Secrets Operator / Resources
+        panel: Cluster Push Secret Overview [1h]
+        targetIdx: 0
+      - dashboard: External Secrets Operator / Resources
+        panel: Cluster Push Secret Overview [1h]
+        targetIdx: 1

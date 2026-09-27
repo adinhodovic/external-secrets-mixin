@@ -1,0 +1,1724 @@
+{
+   "__inputs": [ ],
+   "__requires": [ ],
+   "annotations": {
+      "list": [ ]
+   },
+   "description": "A fleet-wide health overview for the External Secrets Operator, covering ExternalSecrets (including ClusterExternalSecrets), SecretStores (including ClusterSecretStores) and PushSecrets (including ClusterPushSecrets). Filterable by namespace and provider only - use the Resources dashboard to drill into a specific named resource. The dashboards were generated using [external-secrets-operator-mixin](https://github.com/adinhodovic/external-secrets-operator-mixin). Open issues and create feature requests in the repository.",
+   "editable": false,
+   "links": [
+      {
+         "asDropdown": true,
+         "includeVars": false,
+         "keepTime": true,
+         "tags": [
+            "external-secrets",
+            "eso-mixin",
+            "kubernetes"
+         ],
+         "targetBlank": true,
+         "title": "External Secrets Operator",
+         "type": "dashboards"
+      }
+   ],
+   "panels": [
+      {
+         "collapsed": false,
+         "gridPos": {
+            "h": 1,
+            "w": 24,
+            "x": 0,
+            "y": 0
+         },
+         "id": 1,
+         "title": "Summary",
+         "type": "row"
+      },
+      {
+         "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+         },
+         "description": "Total number of ExternalSecrets, SecretStores (incl. ClusterSecretStores) and PushSecrets (incl. ClusterPushSecrets) currently being monitored.",
+         "fieldConfig": {
+            "defaults": {
+               "mappings": [ ],
+               "thresholds": {
+                  "steps": [
+                     {
+                        "color": "green",
+                        "value": 0
+                     }
+                  ]
+               },
+               "unit": "short"
+            }
+         },
+         "gridPos": {
+            "h": 4,
+            "w": 6,
+            "x": 0,
+            "y": 1
+         },
+         "id": 2,
+         "options": {
+            "graphMode": "area",
+            "percentChangeColorMode": "standard",
+            "showPercentChange": false
+         },
+         "pluginVersion": "v11.4.0",
+         "targets": [
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "${datasource}"
+               },
+               "expr": "count(\n  count(\n    externalsecret_status_condition{cluster=\"$cluster\",\njob=~\"$job\"\n,\nexported_namespace=~\"$namespace\"\n}\n    or\n    clusterexternalsecret_status_condition{cluster=\"$cluster\",\njob=~\"$job\"\n\n}\n    or\n    secretstore_status_condition{cluster=\"$cluster\",\njob=~\"$job\"\n,\nexported_namespace=~\"$namespace\"\n}\n    or\n    clustersecretstore_status_condition{cluster=\"$cluster\",\njob=~\"$job\"\n\n}\n    or\n    pushsecret_status_condition{cluster=\"$cluster\",\njob=~\"$job\"\n,\nexported_namespace=~\"$namespace\"\n}\n    or\n    clusterpushsecret_status_condition{cluster=\"$cluster\",\njob=~\"$job\"\n\n}\n  ) by (exported_namespace, name)\n)\n"
+            }
+         ],
+         "title": "Total Resources",
+         "type": "stat"
+      },
+      {
+         "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+         },
+         "description": "Percentage of all ESO-managed resources across all three CRD families currently reporting Ready=True.",
+         "fieldConfig": {
+            "defaults": {
+               "mappings": [ ],
+               "thresholds": {
+                  "steps": [
+                     {
+                        "color": "red",
+                        "value": 0
+                     },
+                     {
+                        "color": "yellow",
+                        "value": 99
+                     },
+                     {
+                        "color": "green",
+                        "value": 100
+                     }
+                  ]
+               },
+               "unit": "percent"
+            }
+         },
+         "gridPos": {
+            "h": 4,
+            "w": 6,
+            "x": 6,
+            "y": 1
+         },
+         "id": 3,
+         "options": {
+            "graphMode": "area",
+            "percentChangeColorMode": "standard",
+            "showPercentChange": false
+         },
+         "pluginVersion": "v11.4.0",
+         "targets": [
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "${datasource}"
+               },
+               "expr": "sum(\n  externalsecret_status_condition{cluster=\"$cluster\",\njob=~\"$job\"\n,\nexported_namespace=~\"$namespace\"\n, condition=\"Ready\", status=\"True\"}\n  or\n  clusterexternalsecret_status_condition{cluster=\"$cluster\",\njob=~\"$job\"\n\n, condition=\"Ready\", status=\"True\"}\n  or\n  secretstore_status_condition{cluster=\"$cluster\",\njob=~\"$job\"\n,\nexported_namespace=~\"$namespace\"\n, condition=\"Ready\", status=\"True\"}\n  or\n  clustersecretstore_status_condition{cluster=\"$cluster\",\njob=~\"$job\"\n\n, condition=\"Ready\", status=\"True\"}\n  or\n  pushsecret_status_condition{cluster=\"$cluster\",\njob=~\"$job\"\n,\nexported_namespace=~\"$namespace\"\n, condition=\"Ready\", status=\"True\"}\n  or\n  clusterpushsecret_status_condition{cluster=\"$cluster\",\njob=~\"$job\"\n\n, condition=\"Ready\", status=\"True\"}\n)\n/\nsum(\n  externalsecret_status_condition{cluster=\"$cluster\",\njob=~\"$job\"\n,\nexported_namespace=~\"$namespace\"\n, condition=\"Ready\"}\n  or\n  clusterexternalsecret_status_condition{cluster=\"$cluster\",\njob=~\"$job\"\n\n, condition=\"Ready\"}\n  or\n  secretstore_status_condition{cluster=\"$cluster\",\njob=~\"$job\"\n,\nexported_namespace=~\"$namespace\"\n, condition=\"Ready\"}\n  or\n  clustersecretstore_status_condition{cluster=\"$cluster\",\njob=~\"$job\"\n\n, condition=\"Ready\"}\n  or\n  pushsecret_status_condition{cluster=\"$cluster\",\njob=~\"$job\"\n,\nexported_namespace=~\"$namespace\"\n, condition=\"Ready\"}\n  or\n  clusterpushsecret_status_condition{cluster=\"$cluster\",\njob=~\"$job\"\n\n, condition=\"Ready\"}\n)\n* 100\n"
+            }
+         ],
+         "title": "Overall Ready",
+         "type": "stat"
+      },
+      {
+         "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+         },
+         "description": "Total number of resources across all three CRD families currently reporting Ready=False. See the per-CRD rows below for which ones.",
+         "fieldConfig": {
+            "defaults": {
+               "mappings": [ ],
+               "thresholds": {
+                  "steps": [
+                     {
+                        "color": "green",
+                        "value": 0
+                     },
+                     {
+                        "color": "red",
+                        "value": 1
+                     }
+                  ]
+               },
+               "unit": "short"
+            }
+         },
+         "gridPos": {
+            "h": 4,
+            "w": 6,
+            "x": 12,
+            "y": 1
+         },
+         "id": 4,
+         "options": {
+            "graphMode": "area",
+            "percentChangeColorMode": "standard",
+            "showPercentChange": false
+         },
+         "pluginVersion": "v11.4.0",
+         "targets": [
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "${datasource}"
+               },
+               "expr": "sum(\n  externalsecret_status_condition{cluster=\"$cluster\",\njob=~\"$job\"\n,\nexported_namespace=~\"$namespace\"\n, condition=\"Ready\", status=\"False\"}\n  or\n  clusterexternalsecret_status_condition{cluster=\"$cluster\",\njob=~\"$job\"\n\n, condition=\"Ready\", status=\"False\"}\n  or\n  secretstore_status_condition{cluster=\"$cluster\",\njob=~\"$job\"\n,\nexported_namespace=~\"$namespace\"\n, condition=\"Ready\", status=\"False\"}\n  or\n  clustersecretstore_status_condition{cluster=\"$cluster\",\njob=~\"$job\"\n\n, condition=\"Ready\", status=\"False\"}\n  or\n  pushsecret_status_condition{cluster=\"$cluster\",\njob=~\"$job\"\n,\nexported_namespace=~\"$namespace\"\n, condition=\"Ready\", status=\"False\"}\n  or\n  clusterpushsecret_status_condition{cluster=\"$cluster\",\njob=~\"$job\"\n\n, condition=\"Ready\", status=\"False\"}\n)\n"
+            }
+         ],
+         "title": "Total Not Ready",
+         "type": "stat"
+      },
+      {
+         "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+         },
+         "description": "Distinct namespaces containing at least one ExternalSecret, SecretStore or PushSecret.",
+         "fieldConfig": {
+            "defaults": {
+               "mappings": [ ],
+               "thresholds": {
+                  "steps": [
+                     {
+                        "color": "green",
+                        "value": 0
+                     }
+                  ]
+               },
+               "unit": "short"
+            }
+         },
+         "gridPos": {
+            "h": 4,
+            "w": 6,
+            "x": 18,
+            "y": 1
+         },
+         "id": 5,
+         "options": {
+            "graphMode": "area",
+            "percentChangeColorMode": "standard",
+            "showPercentChange": false
+         },
+         "pluginVersion": "v11.4.0",
+         "targets": [
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "${datasource}"
+               },
+               "expr": "count(\n  count(\n    externalsecret_status_condition{cluster=\"$cluster\",\njob=~\"$job\"\n,\nexported_namespace=~\"$namespace\"\n}\n    or\n    secretstore_status_condition{cluster=\"$cluster\",\njob=~\"$job\"\n,\nexported_namespace=~\"$namespace\"\n}\n    or\n    pushsecret_status_condition{cluster=\"$cluster\",\njob=~\"$job\"\n,\nexported_namespace=~\"$namespace\"\n}\n  ) by (exported_namespace)\n)\n"
+            }
+         ],
+         "title": "Namespaces",
+         "type": "stat"
+      },
+      {
+         "collapsed": false,
+         "gridPos": {
+            "h": 1,
+            "w": 24,
+            "x": 0,
+            "y": 5
+         },
+         "id": 6,
+         "title": "Provider",
+         "type": "row"
+      },
+      {
+         "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+         },
+         "description": "Distinct upstream secret provider backends currently in use by ExternalSecrets.",
+         "fieldConfig": {
+            "defaults": {
+               "mappings": [ ],
+               "thresholds": {
+                  "steps": [
+                     {
+                        "color": "green",
+                        "value": 0
+                     }
+                  ]
+               },
+               "unit": "short"
+            }
+         },
+         "gridPos": {
+            "h": 4,
+            "w": 6,
+            "x": 0,
+            "y": 6
+         },
+         "id": 7,
+         "options": {
+            "graphMode": "area",
+            "percentChangeColorMode": "standard",
+            "showPercentChange": false
+         },
+         "pluginVersion": "v11.4.0",
+         "targets": [
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "${datasource}"
+               },
+               "expr": "count(\n  count(\n    externalsecret_provider_api_calls_count{\n      cluster=\"$cluster\",\njob=~\"$job\"\n,\nprovider=~\"$provider\"\n\n    }\n  ) by (provider)\n)\n"
+            }
+         ],
+         "title": "Providers",
+         "type": "stat"
+      },
+      {
+         "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+         },
+         "description": "Combined rate of API calls to all upstream secret providers.",
+         "fieldConfig": {
+            "defaults": {
+               "mappings": [ ],
+               "thresholds": {
+                  "steps": [
+                     {
+                        "color": "green",
+                        "value": 0
+                     }
+                  ]
+               },
+               "unit": "reqps"
+            }
+         },
+         "gridPos": {
+            "h": 4,
+            "w": 6,
+            "x": 6,
+            "y": 6
+         },
+         "id": 8,
+         "options": {
+            "graphMode": "area",
+            "percentChangeColorMode": "standard",
+            "showPercentChange": false
+         },
+         "pluginVersion": "v11.4.0",
+         "targets": [
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "${datasource}"
+               },
+               "expr": "sum(\n  rate(\n    externalsecret_provider_api_calls_count{\n      cluster=\"$cluster\",\njob=~\"$job\"\n,\nprovider=~\"$provider\"\n\n    }[$__rate_interval]\n  )\n)\n"
+            }
+         ],
+         "title": "Provider API Call Rate",
+         "type": "stat"
+      },
+      {
+         "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+         },
+         "description": "Percentage of upstream secret provider API calls that failed. High values point to provider throttling, expired credentials, or network connectivity issues between ESO and the provider.",
+         "fieldConfig": {
+            "defaults": {
+               "mappings": [ ],
+               "thresholds": {
+                  "steps": [
+                     {
+                        "color": "green",
+                        "value": 0
+                     },
+                     {
+                        "color": "yellow",
+                        "value": 1
+                     },
+                     {
+                        "color": "red",
+                        "value": 5
+                     }
+                  ]
+               },
+               "unit": "percent"
+            }
+         },
+         "gridPos": {
+            "h": 4,
+            "w": 6,
+            "x": 12,
+            "y": 6
+         },
+         "id": 9,
+         "options": {
+            "graphMode": "area",
+            "percentChangeColorMode": "standard",
+            "showPercentChange": false
+         },
+         "pluginVersion": "v11.4.0",
+         "targets": [
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "${datasource}"
+               },
+               "expr": "sum(\n  rate(\n    externalsecret_provider_api_calls_count{\n      cluster=\"$cluster\",\njob=~\"$job\"\n,\nprovider=~\"$provider\"\n,\n      status=\"error\"\n    }[$__rate_interval]\n  )\n)\n/\nsum(\n  rate(\n    externalsecret_provider_api_calls_count{\n      cluster=\"$cluster\",\njob=~\"$job\"\n,\nprovider=~\"$provider\"\n\n    }[$__rate_interval]\n  )\n)\n* 100\n"
+            }
+         ],
+         "title": "Provider API Error Rate",
+         "type": "stat"
+      },
+      {
+         "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+         },
+         "description": "Number of distinct provider backends with at least one failed API call right now - shows how widespread a problem is, as opposed to the Provider API Error Rate above, which shows how severe it is.",
+         "fieldConfig": {
+            "defaults": {
+               "mappings": [ ],
+               "thresholds": {
+                  "steps": [
+                     {
+                        "color": "green",
+                        "value": 0
+                     },
+                     {
+                        "color": "red",
+                        "value": 1
+                     }
+                  ]
+               },
+               "unit": "short"
+            }
+         },
+         "gridPos": {
+            "h": 4,
+            "w": 6,
+            "x": 18,
+            "y": 6
+         },
+         "id": 10,
+         "options": {
+            "graphMode": "area",
+            "percentChangeColorMode": "standard",
+            "showPercentChange": false
+         },
+         "pluginVersion": "v11.4.0",
+         "targets": [
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "${datasource}"
+               },
+               "expr": "count(\n  count(\n    increase(\n      externalsecret_provider_api_calls_count{\n        cluster=\"$cluster\",\njob=~\"$job\"\n,\nprovider=~\"$provider\"\n,\n        status=\"error\"\n      }[$__rate_interval]\n    ) > 0\n  ) by (provider)\n)\n"
+            }
+         ],
+         "title": "Providers with Errors",
+         "type": "stat"
+      },
+      {
+         "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+         },
+         "description": "Distribution of provider API calls across the busiest 20 secret provider backends over the past hour.",
+         "fieldConfig": {
+            "defaults": {
+               "unit": "reqps"
+            },
+            "overrides": [ ]
+         },
+         "gridPos": {
+            "h": 6,
+            "w": 24,
+            "x": 0,
+            "y": 10
+         },
+         "id": 11,
+         "options": {
+            "displayLabels": [
+               "percent"
+            ],
+            "legend": {
+               "displayMode": "table",
+               "placement": "right",
+               "showLegend": true,
+               "values": [
+                  "percent"
+               ]
+            },
+            "tooltip": {
+               "mode": "multi",
+               "sort": "desc"
+            }
+         },
+         "pluginVersion": "v11.4.0",
+         "targets": [
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "$datasource"
+               },
+               "expr": "topk(20,\n  sum(\n    rate(\n      externalsecret_provider_api_calls_count{\n        cluster=\"$cluster\",\njob=~\"$job\"\n,\nprovider=~\"$provider\"\n\n      }[1h]\n    )\n  ) by (provider)\n)\n",
+               "instant": true,
+               "legendFormat": "{{ provider }}"
+            }
+         ],
+         "title": "Provider API Call Rate by Provider [1h, Top 20]",
+         "type": "piechart"
+      },
+      {
+         "collapsed": false,
+         "gridPos": {
+            "h": 1,
+            "w": 24,
+            "x": 0,
+            "y": 16
+         },
+         "id": 12,
+         "title": "External Secrets",
+         "type": "row"
+      },
+      {
+         "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+         },
+         "description": "Total number of ExternalSecret resources currently being monitored.",
+         "fieldConfig": {
+            "defaults": {
+               "mappings": [ ],
+               "thresholds": {
+                  "steps": [
+                     {
+                        "color": "green",
+                        "value": 0
+                     }
+                  ]
+               },
+               "unit": "short"
+            }
+         },
+         "gridPos": {
+            "h": 4,
+            "w": 4,
+            "x": 0,
+            "y": 17
+         },
+         "id": 13,
+         "options": {
+            "graphMode": "area",
+            "percentChangeColorMode": "standard",
+            "showPercentChange": false
+         },
+         "pluginVersion": "v11.4.0",
+         "targets": [
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "${datasource}"
+               },
+               "expr": "count(\n  count(\n    externalsecret_status_condition{\n      cluster=\"$cluster\",\njob=~\"$job\"\n,\nexported_namespace=~\"$namespace\"\n\n    }\n  ) by (exported_namespace, name)\n)\n"
+            }
+         ],
+         "title": "External Secrets",
+         "type": "stat"
+      },
+      {
+         "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+         },
+         "description": "Total number of ClusterExternalSecrets currently being monitored.",
+         "fieldConfig": {
+            "defaults": {
+               "mappings": [ ],
+               "thresholds": {
+                  "steps": [
+                     {
+                        "color": "green",
+                        "value": 0
+                     }
+                  ]
+               },
+               "unit": "short"
+            }
+         },
+         "gridPos": {
+            "h": 4,
+            "w": 4,
+            "x": 4,
+            "y": 17
+         },
+         "id": 14,
+         "options": {
+            "graphMode": "area",
+            "percentChangeColorMode": "standard",
+            "showPercentChange": false
+         },
+         "pluginVersion": "v11.4.0",
+         "targets": [
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "${datasource}"
+               },
+               "expr": "count(\n  count(\n    clusterexternalsecret_status_condition{\n      cluster=\"$cluster\",\njob=~\"$job\"\n\n\n    }\n  ) by (name)\n)\n"
+            }
+         ],
+         "title": "Cluster External Secrets",
+         "type": "stat"
+      },
+      {
+         "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+         },
+         "description": "Percentage of ExternalSecrets currently reporting Ready=True. Values below 100% mean secrets are failing to sync - see the Not Ready table below.",
+         "fieldConfig": {
+            "defaults": {
+               "mappings": [ ],
+               "thresholds": {
+                  "steps": [
+                     {
+                        "color": "red",
+                        "value": 0
+                     },
+                     {
+                        "color": "yellow",
+                        "value": 99
+                     },
+                     {
+                        "color": "green",
+                        "value": 100
+                     }
+                  ]
+               },
+               "unit": "percent"
+            }
+         },
+         "gridPos": {
+            "h": 4,
+            "w": 4,
+            "x": 8,
+            "y": 17
+         },
+         "id": 15,
+         "options": {
+            "graphMode": "area",
+            "percentChangeColorMode": "standard",
+            "showPercentChange": false
+         },
+         "pluginVersion": "v11.4.0",
+         "targets": [
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "${datasource}"
+               },
+               "expr": "sum(\n  externalsecret_status_condition{\n    cluster=\"$cluster\",\njob=~\"$job\"\n,\nexported_namespace=~\"$namespace\"\n,\n    condition=\"Ready\",\n    status=\"True\"\n  }\n)\n/\nsum(\n  externalsecret_status_condition{\n    cluster=\"$cluster\",\njob=~\"$job\"\n,\nexported_namespace=~\"$namespace\"\n,\n    condition=\"Ready\"\n  }\n)\n* 100\n"
+            }
+         ],
+         "title": "External Secrets Ready",
+         "type": "stat"
+      },
+      {
+         "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+         },
+         "description": "Percentage of ClusterExternalSecrets currently reporting Ready=True.",
+         "fieldConfig": {
+            "defaults": {
+               "mappings": [ ],
+               "thresholds": {
+                  "steps": [
+                     {
+                        "color": "red",
+                        "value": 0
+                     },
+                     {
+                        "color": "yellow",
+                        "value": 99
+                     },
+                     {
+                        "color": "green",
+                        "value": 100
+                     }
+                  ]
+               },
+               "unit": "percent"
+            }
+         },
+         "gridPos": {
+            "h": 4,
+            "w": 4,
+            "x": 12,
+            "y": 17
+         },
+         "id": 16,
+         "options": {
+            "graphMode": "area",
+            "percentChangeColorMode": "standard",
+            "showPercentChange": false
+         },
+         "pluginVersion": "v11.4.0",
+         "targets": [
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "${datasource}"
+               },
+               "expr": "sum(\n  clusterexternalsecret_status_condition{\n    cluster=\"$cluster\",\njob=~\"$job\"\n\n,\n    condition=\"Ready\",\n    status=\"True\"\n  }\n)\n/\nsum(\n  clusterexternalsecret_status_condition{\n    cluster=\"$cluster\",\njob=~\"$job\"\n\n,\n    condition=\"Ready\"\n  }\n)\n* 100\n"
+            }
+         ],
+         "title": "Cluster External Secrets Ready",
+         "type": "stat"
+      },
+      {
+         "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+         },
+         "description": "Rate of ExternalSecret sync attempts against providers.",
+         "fieldConfig": {
+            "defaults": {
+               "mappings": [ ],
+               "thresholds": {
+                  "steps": [
+                     {
+                        "color": "green",
+                        "value": 0
+                     }
+                  ]
+               },
+               "unit": "reqps"
+            }
+         },
+         "gridPos": {
+            "h": 4,
+            "w": 4,
+            "x": 16,
+            "y": 17
+         },
+         "id": 17,
+         "options": {
+            "graphMode": "area",
+            "percentChangeColorMode": "standard",
+            "showPercentChange": false
+         },
+         "pluginVersion": "v11.4.0",
+         "targets": [
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "${datasource}"
+               },
+               "expr": "sum(\n  rate(\n    externalsecret_sync_calls_total{\n      cluster=\"$cluster\",\njob=~\"$job\"\n,\nexported_namespace=~\"$namespace\"\n\n    }[$__rate_interval]\n  )\n)\n"
+            }
+         ],
+         "title": "Sync Call Rate",
+         "type": "stat"
+      },
+      {
+         "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+         },
+         "description": "Rate of failed ExternalSecret sync attempts.",
+         "fieldConfig": {
+            "defaults": {
+               "mappings": [ ],
+               "thresholds": {
+                  "steps": [
+                     {
+                        "color": "green",
+                        "value": 0
+                     },
+                     {
+                        "color": "red",
+                        "value": 0.01
+                     }
+                  ]
+               },
+               "unit": "reqps"
+            }
+         },
+         "gridPos": {
+            "h": 4,
+            "w": 4,
+            "x": 20,
+            "y": 17
+         },
+         "id": 18,
+         "options": {
+            "graphMode": "area",
+            "percentChangeColorMode": "standard",
+            "showPercentChange": false
+         },
+         "pluginVersion": "v11.4.0",
+         "targets": [
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "${datasource}"
+               },
+               "expr": "sum(\n  rate(\n    externalsecret_sync_calls_error{\n      cluster=\"$cluster\",\njob=~\"$job\"\n,\nexported_namespace=~\"$namespace\"\n\n    }[$__rate_interval]\n  )\n)\n"
+            }
+         ],
+         "title": "Sync Error Rate",
+         "type": "stat"
+      },
+      {
+         "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+         },
+         "description": "Current split of ExternalSecrets by their Ready condition status. Any non-True slice needs investigation.",
+         "fieldConfig": {
+            "defaults": {
+               "unit": "short"
+            },
+            "overrides": [ ]
+         },
+         "gridPos": {
+            "h": 6,
+            "w": 24,
+            "x": 0,
+            "y": 21
+         },
+         "id": 19,
+         "options": {
+            "displayLabels": [
+               "percent"
+            ],
+            "legend": {
+               "displayMode": "table",
+               "placement": "right",
+               "showLegend": true,
+               "values": [
+                  "percent"
+               ]
+            },
+            "tooltip": {
+               "mode": "multi",
+               "sort": "desc"
+            }
+         },
+         "pluginVersion": "v11.4.0",
+         "targets": [
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "$datasource"
+               },
+               "expr": "sum(\n  externalsecret_status_condition{\n    cluster=\"$cluster\",\njob=~\"$job\"\n,\nexported_namespace=~\"$namespace\"\n,\n    condition=\"Ready\"\n  }\n) by (status)\n",
+               "instant": true,
+               "legendFormat": "{{ status }}"
+            }
+         ],
+         "title": "External Secrets by Ready Status",
+         "type": "piechart"
+      },
+      {
+         "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+         },
+         "description": "ExternalSecrets currently reporting condition Ready=False.",
+         "fieldConfig": {
+            "defaults": {
+               "links": [
+                  {
+                     "targetBlank": true,
+                     "title": "Go To External Secret",
+                     "type": "dashboard",
+                     "url": "/d/eso-resources-skj2/eso-resources?var-namespace=${__data.fields.Namespace}&var-name=${__data.fields.Name}"
+                  }
+               ],
+               "thresholds": {
+                  "steps": [ ]
+               },
+               "unit": "short"
+            },
+            "overrides": [ ]
+         },
+         "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 27
+         },
+         "id": 20,
+         "options": {
+            "footer": {
+               "enablePagination": true
+            }
+         },
+         "pluginVersion": "v11.4.0",
+         "targets": [
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "$datasource"
+               },
+               "expr": "sum(\n  externalsecret_status_condition{\n    cluster=\"$cluster\",\njob=~\"$job\"\n,\nexported_namespace=~\"$namespace\"\n,\n    condition=\"Ready\",\n    status=\"False\"\n  }\n) by (exported_namespace, name, condition, status)\n== 1\n",
+               "format": "table",
+               "instant": true
+            }
+         ],
+         "title": "Not Ready External Secrets",
+         "transformations": [
+            {
+               "id": "organize",
+               "options": {
+                  "excludeByName": {
+                     "Time": true
+                  },
+                  "renameByName": {
+                     "Value": "Not Ready",
+                     "exported_namespace": "Namespace",
+                     "name": "Name"
+                  }
+               }
+            }
+         ],
+         "type": "table"
+      },
+      {
+         "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+         },
+         "description": "ClusterExternalSecrets currently reporting condition Ready=False.",
+         "fieldConfig": {
+            "defaults": {
+               "links": [
+                  {
+                     "targetBlank": true,
+                     "title": "Go To External Secret",
+                     "type": "dashboard",
+                     "url": "/d/eso-resources-skj2/eso-resources?var-name=${__data.fields.Name}"
+                  }
+               ],
+               "thresholds": {
+                  "steps": [ ]
+               },
+               "unit": "short"
+            },
+            "overrides": [ ]
+         },
+         "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 27
+         },
+         "id": 21,
+         "options": {
+            "footer": {
+               "enablePagination": true
+            }
+         },
+         "pluginVersion": "v11.4.0",
+         "targets": [
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "$datasource"
+               },
+               "expr": "sum(\n  clusterexternalsecret_status_condition{\n    cluster=\"$cluster\",\njob=~\"$job\"\n\n,\n    condition=\"Ready\",\n    status=\"False\"\n  }\n) by (name, condition, status)\n== 1\n",
+               "format": "table",
+               "instant": true
+            }
+         ],
+         "title": "Not Ready Cluster External Secrets",
+         "transformations": [
+            {
+               "id": "organize",
+               "options": {
+                  "excludeByName": {
+                     "Time": true
+                  },
+                  "renameByName": {
+                     "Value": "Not Ready",
+                     "name": "Name"
+                  }
+               }
+            }
+         ],
+         "type": "table"
+      },
+      {
+         "collapsed": false,
+         "gridPos": {
+            "h": 1,
+            "w": 24,
+            "x": 0,
+            "y": 35
+         },
+         "id": 22,
+         "title": "Secret Stores",
+         "type": "row"
+      },
+      {
+         "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+         },
+         "description": "Total number of namespaced SecretStores currently being monitored.",
+         "fieldConfig": {
+            "defaults": {
+               "mappings": [ ],
+               "thresholds": {
+                  "steps": [
+                     {
+                        "color": "green",
+                        "value": 0
+                     }
+                  ]
+               },
+               "unit": "short"
+            }
+         },
+         "gridPos": {
+            "h": 4,
+            "w": 6,
+            "x": 0,
+            "y": 36
+         },
+         "id": 23,
+         "options": {
+            "graphMode": "area",
+            "percentChangeColorMode": "standard",
+            "showPercentChange": false
+         },
+         "pluginVersion": "v11.4.0",
+         "targets": [
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "${datasource}"
+               },
+               "expr": "count(\n  count(\n    secretstore_status_condition{\n      cluster=\"$cluster\",\njob=~\"$job\"\n,\nexported_namespace=~\"$namespace\"\n\n    }\n  ) by (exported_namespace, name)\n)\n"
+            }
+         ],
+         "title": "Secret Stores",
+         "type": "stat"
+      },
+      {
+         "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+         },
+         "description": "Total number of ClusterSecretStores currently being monitored.",
+         "fieldConfig": {
+            "defaults": {
+               "mappings": [ ],
+               "thresholds": {
+                  "steps": [
+                     {
+                        "color": "green",
+                        "value": 0
+                     }
+                  ]
+               },
+               "unit": "short"
+            }
+         },
+         "gridPos": {
+            "h": 4,
+            "w": 6,
+            "x": 6,
+            "y": 36
+         },
+         "id": 24,
+         "options": {
+            "graphMode": "area",
+            "percentChangeColorMode": "standard",
+            "showPercentChange": false
+         },
+         "pluginVersion": "v11.4.0",
+         "targets": [
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "${datasource}"
+               },
+               "expr": "count(\n  count(\n    clustersecretstore_status_condition{\n      cluster=\"$cluster\",\njob=~\"$job\"\n\n\n    }\n  ) by (name)\n)\n"
+            }
+         ],
+         "title": "Cluster Secret Stores",
+         "type": "stat"
+      },
+      {
+         "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+         },
+         "description": "Percentage of SecretStores currently reporting Ready=True. Non-100% values usually mean invalid provider credentials or an unreachable provider endpoint.",
+         "fieldConfig": {
+            "defaults": {
+               "mappings": [ ],
+               "thresholds": {
+                  "steps": [
+                     {
+                        "color": "red",
+                        "value": 0
+                     },
+                     {
+                        "color": "yellow",
+                        "value": 99
+                     },
+                     {
+                        "color": "green",
+                        "value": 100
+                     }
+                  ]
+               },
+               "unit": "percent"
+            }
+         },
+         "gridPos": {
+            "h": 4,
+            "w": 6,
+            "x": 12,
+            "y": 36
+         },
+         "id": 25,
+         "options": {
+            "graphMode": "area",
+            "percentChangeColorMode": "standard",
+            "showPercentChange": false
+         },
+         "pluginVersion": "v11.4.0",
+         "targets": [
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "${datasource}"
+               },
+               "expr": "sum(\n  secretstore_status_condition{\n    cluster=\"$cluster\",\njob=~\"$job\"\n,\nexported_namespace=~\"$namespace\"\n,\n    condition=\"Ready\",\n    status=\"True\"\n  }\n)\n/\nsum(\n  secretstore_status_condition{\n    cluster=\"$cluster\",\njob=~\"$job\"\n,\nexported_namespace=~\"$namespace\"\n,\n    condition=\"Ready\"\n  }\n)\n* 100\n"
+            }
+         ],
+         "title": "Secret Stores Ready",
+         "type": "stat"
+      },
+      {
+         "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+         },
+         "description": "Percentage of ClusterSecretStores currently reporting Ready=True.",
+         "fieldConfig": {
+            "defaults": {
+               "mappings": [ ],
+               "thresholds": {
+                  "steps": [
+                     {
+                        "color": "red",
+                        "value": 0
+                     },
+                     {
+                        "color": "yellow",
+                        "value": 99
+                     },
+                     {
+                        "color": "green",
+                        "value": 100
+                     }
+                  ]
+               },
+               "unit": "percent"
+            }
+         },
+         "gridPos": {
+            "h": 4,
+            "w": 6,
+            "x": 18,
+            "y": 36
+         },
+         "id": 26,
+         "options": {
+            "graphMode": "area",
+            "percentChangeColorMode": "standard",
+            "showPercentChange": false
+         },
+         "pluginVersion": "v11.4.0",
+         "targets": [
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "${datasource}"
+               },
+               "expr": "sum(\n  clustersecretstore_status_condition{\n    cluster=\"$cluster\",\njob=~\"$job\"\n\n,\n    condition=\"Ready\",\n    status=\"True\"\n  }\n)\n/\nsum(\n  clustersecretstore_status_condition{\n    cluster=\"$cluster\",\njob=~\"$job\"\n\n,\n    condition=\"Ready\"\n  }\n)\n* 100\n"
+            }
+         ],
+         "title": "Cluster Secret Stores Ready",
+         "type": "stat"
+      },
+      {
+         "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+         },
+         "description": "SecretStores currently reporting condition Ready=False. Typically means invalid provider credentials or an unreachable provider endpoint.",
+         "fieldConfig": {
+            "defaults": {
+               "links": [
+                  {
+                     "targetBlank": true,
+                     "title": "Go To Secret Store",
+                     "type": "dashboard",
+                     "url": "/d/eso-resources-skj2/eso-resources?var-secret_store_namespace=${__data.fields.Namespace}&var-secret_store_name=${__data.fields.Name}"
+                  }
+               ],
+               "thresholds": {
+                  "steps": [ ]
+               },
+               "unit": "short"
+            },
+            "overrides": [ ]
+         },
+         "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 40
+         },
+         "id": 27,
+         "options": {
+            "footer": {
+               "enablePagination": true
+            }
+         },
+         "pluginVersion": "v11.4.0",
+         "targets": [
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "$datasource"
+               },
+               "expr": "sum(\n  secretstore_status_condition{\n    cluster=\"$cluster\",\njob=~\"$job\"\n,\nexported_namespace=~\"$namespace\"\n,\n    condition=\"Ready\",\n    status=\"False\"\n  }\n) by (exported_namespace, name, condition, status)\n== 1\n",
+               "format": "table",
+               "instant": true
+            }
+         ],
+         "title": "Not Ready Secret Stores",
+         "transformations": [
+            {
+               "id": "organize",
+               "options": {
+                  "excludeByName": {
+                     "Time": true
+                  },
+                  "renameByName": {
+                     "Value": "Not Ready",
+                     "exported_namespace": "Namespace",
+                     "name": "Name"
+                  }
+               }
+            }
+         ],
+         "type": "table"
+      },
+      {
+         "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+         },
+         "description": "ClusterSecretStores currently reporting condition Ready=False.",
+         "fieldConfig": {
+            "defaults": {
+               "links": [
+                  {
+                     "targetBlank": true,
+                     "title": "Go To Secret Store",
+                     "type": "dashboard",
+                     "url": "/d/eso-resources-skj2/eso-resources?var-secret_store_name=${__data.fields.Name}"
+                  }
+               ],
+               "thresholds": {
+                  "steps": [ ]
+               },
+               "unit": "short"
+            },
+            "overrides": [ ]
+         },
+         "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 40
+         },
+         "id": 28,
+         "options": {
+            "footer": {
+               "enablePagination": true
+            }
+         },
+         "pluginVersion": "v11.4.0",
+         "targets": [
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "$datasource"
+               },
+               "expr": "sum(\n  clustersecretstore_status_condition{\n    cluster=\"$cluster\",\njob=~\"$job\"\n\n,\n    condition=\"Ready\",\n    status=\"False\"\n  }\n) by (name, condition, status)\n== 1\n",
+               "format": "table",
+               "instant": true
+            }
+         ],
+         "title": "Not Ready Cluster Secret Stores",
+         "transformations": [
+            {
+               "id": "organize",
+               "options": {
+                  "excludeByName": {
+                     "Time": true
+                  },
+                  "renameByName": {
+                     "Value": "Not Ready",
+                     "name": "Name"
+                  }
+               }
+            }
+         ],
+         "type": "table"
+      },
+      {
+         "collapsed": false,
+         "gridPos": {
+            "h": 1,
+            "w": 24,
+            "x": 0,
+            "y": 48
+         },
+         "id": 29,
+         "title": "Push Secrets",
+         "type": "row"
+      },
+      {
+         "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+         },
+         "description": "Total number of namespaced PushSecrets currently being monitored.",
+         "fieldConfig": {
+            "defaults": {
+               "mappings": [ ],
+               "thresholds": {
+                  "steps": [
+                     {
+                        "color": "green",
+                        "value": 0
+                     }
+                  ]
+               },
+               "unit": "short"
+            }
+         },
+         "gridPos": {
+            "h": 4,
+            "w": 6,
+            "x": 0,
+            "y": 49
+         },
+         "id": 30,
+         "options": {
+            "graphMode": "area",
+            "percentChangeColorMode": "standard",
+            "showPercentChange": false
+         },
+         "pluginVersion": "v11.4.0",
+         "targets": [
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "${datasource}"
+               },
+               "expr": "count(\n  count(\n    pushsecret_status_condition{\n      cluster=\"$cluster\",\njob=~\"$job\"\n,\nexported_namespace=~\"$namespace\"\n\n    }\n  ) by (exported_namespace, name)\n)\n"
+            }
+         ],
+         "title": "Push Secrets",
+         "type": "stat"
+      },
+      {
+         "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+         },
+         "description": "Total number of ClusterPushSecrets currently being monitored.",
+         "fieldConfig": {
+            "defaults": {
+               "mappings": [ ],
+               "thresholds": {
+                  "steps": [
+                     {
+                        "color": "green",
+                        "value": 0
+                     }
+                  ]
+               },
+               "unit": "short"
+            }
+         },
+         "gridPos": {
+            "h": 4,
+            "w": 6,
+            "x": 6,
+            "y": 49
+         },
+         "id": 31,
+         "options": {
+            "graphMode": "area",
+            "percentChangeColorMode": "standard",
+            "showPercentChange": false
+         },
+         "pluginVersion": "v11.4.0",
+         "targets": [
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "${datasource}"
+               },
+               "expr": "count(\n  count(\n    clusterpushsecret_status_condition{\n      cluster=\"$cluster\",\njob=~\"$job\"\n\n\n    }\n  ) by (name)\n)\n"
+            }
+         ],
+         "title": "Cluster Push Secrets",
+         "type": "stat"
+      },
+      {
+         "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+         },
+         "description": "Percentage of PushSecrets currently reporting Ready=True.",
+         "fieldConfig": {
+            "defaults": {
+               "mappings": [ ],
+               "thresholds": {
+                  "steps": [
+                     {
+                        "color": "red",
+                        "value": 0
+                     },
+                     {
+                        "color": "yellow",
+                        "value": 99
+                     },
+                     {
+                        "color": "green",
+                        "value": 100
+                     }
+                  ]
+               },
+               "unit": "percent"
+            }
+         },
+         "gridPos": {
+            "h": 4,
+            "w": 6,
+            "x": 12,
+            "y": 49
+         },
+         "id": 32,
+         "options": {
+            "graphMode": "area",
+            "percentChangeColorMode": "standard",
+            "showPercentChange": false
+         },
+         "pluginVersion": "v11.4.0",
+         "targets": [
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "${datasource}"
+               },
+               "expr": "sum(\n  pushsecret_status_condition{\n    cluster=\"$cluster\",\njob=~\"$job\"\n,\nexported_namespace=~\"$namespace\"\n,\n    condition=\"Ready\",\n    status=\"True\"\n  }\n)\n/\nsum(\n  pushsecret_status_condition{\n    cluster=\"$cluster\",\njob=~\"$job\"\n,\nexported_namespace=~\"$namespace\"\n,\n    condition=\"Ready\"\n  }\n)\n* 100\n"
+            }
+         ],
+         "title": "Push Secrets Ready",
+         "type": "stat"
+      },
+      {
+         "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+         },
+         "description": "Percentage of ClusterPushSecrets currently reporting Ready=True.",
+         "fieldConfig": {
+            "defaults": {
+               "mappings": [ ],
+               "thresholds": {
+                  "steps": [
+                     {
+                        "color": "red",
+                        "value": 0
+                     },
+                     {
+                        "color": "yellow",
+                        "value": 99
+                     },
+                     {
+                        "color": "green",
+                        "value": 100
+                     }
+                  ]
+               },
+               "unit": "percent"
+            }
+         },
+         "gridPos": {
+            "h": 4,
+            "w": 6,
+            "x": 18,
+            "y": 49
+         },
+         "id": 33,
+         "options": {
+            "graphMode": "area",
+            "percentChangeColorMode": "standard",
+            "showPercentChange": false
+         },
+         "pluginVersion": "v11.4.0",
+         "targets": [
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "${datasource}"
+               },
+               "expr": "sum(\n  clusterpushsecret_status_condition{\n    cluster=\"$cluster\",\njob=~\"$job\"\n\n,\n    condition=\"Ready\",\n    status=\"True\"\n  }\n)\n/\nsum(\n  clusterpushsecret_status_condition{\n    cluster=\"$cluster\",\njob=~\"$job\"\n\n,\n    condition=\"Ready\"\n  }\n)\n* 100\n"
+            }
+         ],
+         "title": "Cluster Push Secrets Ready",
+         "type": "stat"
+      },
+      {
+         "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+         },
+         "description": "PushSecrets currently reporting condition Ready=False.",
+         "fieldConfig": {
+            "defaults": {
+               "links": [
+                  {
+                     "targetBlank": true,
+                     "title": "Go To Push Secret",
+                     "type": "dashboard",
+                     "url": "/d/eso-resources-skj2/eso-resources?var-push_secret_namespace=${__data.fields.Namespace}&var-push_secret_name=${__data.fields.Name}"
+                  }
+               ],
+               "thresholds": {
+                  "steps": [ ]
+               },
+               "unit": "short"
+            },
+            "overrides": [ ]
+         },
+         "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 53
+         },
+         "id": 34,
+         "options": {
+            "footer": {
+               "enablePagination": true
+            }
+         },
+         "pluginVersion": "v11.4.0",
+         "targets": [
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "$datasource"
+               },
+               "expr": "sum(\n  pushsecret_status_condition{\n    cluster=\"$cluster\",\njob=~\"$job\"\n,\nexported_namespace=~\"$namespace\"\n,\n    condition=\"Ready\",\n    status=\"False\"\n  }\n) by (exported_namespace, name, condition, status)\n== 1\n",
+               "format": "table",
+               "instant": true
+            }
+         ],
+         "title": "Not Ready Push Secrets",
+         "transformations": [
+            {
+               "id": "organize",
+               "options": {
+                  "excludeByName": {
+                     "Time": true
+                  },
+                  "renameByName": {
+                     "Value": "Not Ready",
+                     "exported_namespace": "Namespace",
+                     "name": "Name"
+                  }
+               }
+            }
+         ],
+         "type": "table"
+      },
+      {
+         "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+         },
+         "description": "ClusterPushSecrets currently reporting condition Ready=False.",
+         "fieldConfig": {
+            "defaults": {
+               "links": [
+                  {
+                     "targetBlank": true,
+                     "title": "Go To Push Secret",
+                     "type": "dashboard",
+                     "url": "/d/eso-resources-skj2/eso-resources?var-push_secret_name=${__data.fields.Name}"
+                  }
+               ],
+               "thresholds": {
+                  "steps": [ ]
+               },
+               "unit": "short"
+            },
+            "overrides": [ ]
+         },
+         "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 53
+         },
+         "id": 35,
+         "options": {
+            "footer": {
+               "enablePagination": true
+            }
+         },
+         "pluginVersion": "v11.4.0",
+         "targets": [
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "$datasource"
+               },
+               "expr": "sum(\n  clusterpushsecret_status_condition{\n    cluster=\"$cluster\",\njob=~\"$job\"\n\n,\n    condition=\"Ready\",\n    status=\"False\"\n  }\n) by (name, condition, status)\n== 1\n",
+               "format": "table",
+               "instant": true
+            }
+         ],
+         "title": "Not Ready Cluster Push Secrets",
+         "transformations": [
+            {
+               "id": "organize",
+               "options": {
+                  "excludeByName": {
+                     "Time": true
+                  },
+                  "renameByName": {
+                     "Value": "Not Ready",
+                     "name": "Name"
+                  }
+               }
+            }
+         ],
+         "type": "table"
+      }
+   ],
+   "schemaVersion": 39,
+   "tags": [
+      "external-secrets",
+      "eso-mixin",
+      "kubernetes"
+   ],
+   "templating": {
+      "list": [
+         {
+            "current": {
+               "selected": true,
+               "text": "default",
+               "value": "default"
+            },
+            "label": "Data source",
+            "name": "datasource",
+            "query": "prometheus",
+            "type": "datasource"
+         },
+         {
+            "datasource": {
+               "type": "prometheus",
+               "uid": "${datasource}"
+            },
+            "hide": 2,
+            "label": "Cluster",
+            "name": "cluster",
+            "query": "label_values(externalsecret_status_condition{}, cluster)",
+            "refresh": 2,
+            "sort": 1,
+            "type": "query"
+         },
+         {
+            "datasource": {
+               "type": "prometheus",
+               "uid": "${datasource}"
+            },
+            "includeAll": true,
+            "label": "Job",
+            "multi": true,
+            "name": "job",
+            "query": "label_values(externalsecret_status_condition{cluster=\"$cluster\"}, job)",
+            "refresh": 2,
+            "sort": 1,
+            "type": "query"
+         },
+         {
+            "datasource": {
+               "type": "prometheus",
+               "uid": "${datasource}"
+            },
+            "includeAll": true,
+            "label": "Namespace",
+            "multi": true,
+            "name": "namespace",
+            "query": "label_values(externalsecret_status_condition{cluster=\"$cluster\", job=~\"$job\"}, exported_namespace)",
+            "refresh": 2,
+            "sort": 1,
+            "type": "query"
+         },
+         {
+            "datasource": {
+               "type": "prometheus",
+               "uid": "${datasource}"
+            },
+            "includeAll": true,
+            "label": "Provider",
+            "multi": true,
+            "name": "provider",
+            "query": "label_values(externalsecret_provider_api_calls_count{cluster=\"$cluster\", job=~\"$job\"}, provider)",
+            "refresh": 2,
+            "sort": 1,
+            "type": "query"
+         }
+      ]
+   },
+   "time": {
+      "from": "now-6h",
+      "to": "now"
+   },
+   "timezone": "utc",
+   "title": "External Secrets Operator / Overview",
+   "uid": "eso-overview-skj2"
+}

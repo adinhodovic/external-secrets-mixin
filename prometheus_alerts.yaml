@@ -1,0 +1,126 @@
+"groups":
+- "name": "external-secrets-operator"
+  "rules":
+  - "alert": "ExternalSecretsOperatorSyncErrors"
+    "annotations":
+      "dashboard_url": "https://grafana.com/d/eso-resources-skj2/eso-resources?var-namespace={{ $labels.exported_namespace }}&var-name={{ $labels.name }}"
+      "description": "More than 5% of sync calls failed for ExternalSecret {{ $labels.name }} in {{ $labels.exported_namespace }} the past 15m."
+      "summary": "External Secrets Operator has a high ExternalSecret sync error rate."
+    "expr": |
+      (
+        sum(
+          increase(
+            externalsecret_sync_calls_error{
+              job=~".*external-secrets.*"
+            }[15m]
+          )
+        ) by (exported_namespace, name)
+        /
+        sum(
+          increase(
+            externalsecret_sync_calls_total{
+              job=~".*external-secrets.*"
+            }[15m]
+          )
+        ) by (exported_namespace, name)
+        * 100
+      ) > 5
+    "for": "5m"
+    "labels":
+      "severity": "warning"
+  - "alert": "ExternalSecretsOperatorExternalSecretNotReady"
+    "annotations":
+      "dashboard_url": "https://grafana.com/d/eso-resources-skj2/eso-resources?var-namespace={{ $labels.exported_namespace }}&var-name={{ $labels.name }}"
+      "description": "ExternalSecret {{ $labels.name }} in {{ $labels.exported_namespace }} has not been Ready for the past 15m."
+      "summary": "External Secrets Operator ExternalSecret is not ready."
+    "expr": |
+      sum(
+        externalsecret_status_condition{
+          job=~".*external-secrets.*",
+          condition="Ready",
+          status="False"
+        }
+      ) by (exported_namespace, name, condition, status)
+      == 1
+    "for": "15m"
+    "labels":
+      "severity": "warning"
+  - "alert": "ExternalSecretsOperatorSecretStoreNotReady"
+    "annotations":
+      "dashboard_url": "https://grafana.com/d/eso-resources-skj2/eso-resources?var-secret_store_namespace={{ $labels.exported_namespace }}&var-secret_store_name={{ $labels.name }}"
+      "description": "SecretStore {{ $labels.name }} in {{ $labels.exported_namespace }} has not been Ready for the past 15m."
+      "summary": "External Secrets Operator SecretStore is not ready."
+    "expr": |
+      sum(
+        secretstore_status_condition{
+          job=~".*external-secrets.*",
+          condition="Ready",
+          status="False"
+        }
+      ) by (exported_namespace, name, condition, status)
+      == 1
+    "for": "15m"
+    "labels":
+      "severity": "warning"
+  - "alert": "ExternalSecretsOperatorClusterSecretStoreNotReady"
+    "annotations":
+      "dashboard_url": "https://grafana.com/d/eso-resources-skj2/eso-resources?var-secret_store_name={{ $labels.name }}"
+      "description": "ClusterSecretStore {{ $labels.name }} has not been Ready for the past 15m."
+      "summary": "External Secrets Operator ClusterSecretStore is not ready."
+    "expr": |
+      sum(
+        clustersecretstore_status_condition{
+          job=~".*external-secrets.*",
+          condition="Ready",
+          status="False"
+        }
+      ) by (name, condition, status)
+      == 1
+    "for": "15m"
+    "labels":
+      "severity": "warning"
+  - "alert": "ExternalSecretsOperatorPushSecretNotReady"
+    "annotations":
+      "dashboard_url": "https://grafana.com/d/eso-resources-skj2/eso-resources?var-push_secret_namespace={{ $labels.exported_namespace }}&var-push_secret_name={{ $labels.name }}"
+      "description": "PushSecret {{ $labels.name }} in {{ $labels.exported_namespace }} has not been Ready for the past 15m."
+      "summary": "External Secrets Operator PushSecret is not ready."
+    "expr": |
+      sum(
+        pushsecret_status_condition{
+          job=~".*external-secrets.*",
+          condition="Ready",
+          status="False"
+        }
+      ) by (exported_namespace, name, condition, status)
+      == 1
+    "for": "15m"
+    "labels":
+      "severity": "warning"
+  - "alert": "ExternalSecretsOperatorProviderApiHighErrorRate"
+    "annotations":
+      "dashboard_url": "https://grafana.com/d/eso-overview-skj2/eso-overview"
+      "description": "More than 5% of API calls to provider {{ $labels.provider }} failed the past 15m."
+      "summary": "External Secrets Operator has a high provider API error rate."
+    "expr": |
+      (
+        sum(
+          increase(
+            externalsecret_provider_api_calls_count{
+              job=~".*external-secrets.*",
+              status="error"
+            }[15m]
+          )
+        ) by (provider)
+        /
+        sum(
+          increase(
+            externalsecret_provider_api_calls_count{
+              job=~".*external-secrets.*"
+            }[15m]
+          )
+        ) by (provider)
+        * 100
+      ) > 5
+    "for": "5m"
+    "labels":
+      "severity": "warning"
