@@ -7,11 +7,31 @@ local row = g.panel.row;
 local grid = g.util.grid;
 
 local tablePanel = g.panel.table;
+local timeSeriesPanel = g.panel.timeSeries;
 
 // Table
 local tbStandardOptions = tablePanel.standardOptions;
 local tbQueryOptions = tablePanel.queryOptions;
 local tbPanelOptions = tablePanel.panelOptions;
+
+// Time series
+local tsStandardOptions = timeSeriesPanel.standardOptions;
+local tsOverride = tsStandardOptions.override;
+
+// Ready=True renders green, Ready=False renders red, matching the Ready column colors on
+// the Resources dashboard's per-resource tables.
+local readyStatusOverrides = [
+  tsOverride.byName.new('True') +
+  tsOverride.byName.withPropertiesFromOptions(
+    tsStandardOptions.color.withMode('fixed') +
+    tsStandardOptions.color.withFixedColor('green')
+  ),
+  tsOverride.byName.new('False') +
+  tsOverride.byName.withPropertiesFromOptions(
+    tsStandardOptions.color.withMode('fixed') +
+    tsStandardOptions.color.withFixedColor('red')
+  ),
+];
 
 {
   local dashboardName = 'eso-overview',
@@ -577,7 +597,8 @@ local tbPanelOptions = tablePanel.panelOptions;
             '{{ status }}',
             description='Count of ExternalSecrets by their Ready condition status over time. A rising non-True count needs investigation.',
             stack='normal',
-          ),
+          ) +
+          tsStandardOptions.withOverrides(readyStatusOverrides),
 
         providerApiCallRateByProviderTimeSeries:
           mixinUtils.dashboards.timeSeriesPanel(
